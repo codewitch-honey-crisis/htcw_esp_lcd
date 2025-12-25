@@ -31,7 +31,7 @@
 #ifdef ESP_WROVER_KIT
 #include "esp_lcd_panel_ili9341.h"
 #define LCD_BCKL_ON_LEVEL 0
-#define LCD_SPI_HOST    HSPI_HOST
+#define LCD_SPI_HOST    SPI3_HOST
 #define LCD_DMA
 #define LCD_PIN_NUM_MISO 25
 #define LCD_PIN_NUM_MOSI 23
