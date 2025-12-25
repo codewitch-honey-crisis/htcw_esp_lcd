@@ -23,7 +23,7 @@ void clear_screen(uint16_t color) {
         flushing = 1;
         lcd_flush(0,y,LCD_WIDTH-1,yend,lcd_transfer_buffer());
         y= yend+1;
-        while(lcd_vsync_draw_count()) portYIELD();
+        while(lcd_vsync_flush_count()) portYIELD();
     }
 }
 #endif

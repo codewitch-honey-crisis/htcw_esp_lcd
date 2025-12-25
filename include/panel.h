@@ -187,9 +187,9 @@ void* lcd_transfer_buffer(void);
 void* lcd_transfer_buffer2(void);
 #endif
 #endif
-/// @brief Indicates how many draws have occurred since the vblanking period was active
+/// @brief Indicates how many flushes have occurred since the vblanking period was active
 /// @return The number of draws that have occurred, or 0 if not supported
-size_t lcd_vsync_draw_count(void);
+size_t lcd_vsync_flush_count(void);
 #endif
 #ifdef TOUCH_BUS
 /// @brief Initializes the touch panel

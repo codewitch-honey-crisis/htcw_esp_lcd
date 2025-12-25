@@ -201,7 +201,7 @@ static void i2c_init() {
 #endif
 
 #ifdef LCD_BUS
-size_t lcd_vsync_draw_count(void) { 
+size_t lcd_vsync_flush_count(void) { 
 #ifdef LCD_PIN_NUM_VSYNC
     return vsync_count; 
 #else
