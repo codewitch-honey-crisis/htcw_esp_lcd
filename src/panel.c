@@ -747,7 +747,6 @@ void button_init(void) {
     gpio_config_t cfg;
     memset(&cfg,0,sizeof(cfg));
     cfg.mode = GPIO_MODE_INPUT;
-    printf("MASK: %lld\n",BUTTON_MASK);
     cfg.pin_bit_mask = BUTTON_MASK;
 #if BUTTON_ON_LEVEL == 0
     cfg.pull_down_en = 0;
