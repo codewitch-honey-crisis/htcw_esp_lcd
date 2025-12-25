@@ -5,19 +5,31 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_vendor.h"
-#ifdef LCD_SPI_HOST
+#if LCD_BUS == LCD_BUS_SPI
 #include "driver/spi_master.h"
 #endif
-#ifdef LCD_I2C_HOST
+#if LCD_BUS == LCD_BUS_I2C
 #ifndef LEGACY_I2C
 #include "driver/i2c_master.h"
 #else
 #include "driver/i2c.h"
 #endif
 #endif
+#ifdef LCD_PHY_PWR_LDO_CHAN
+#include "esp_ldo_regulator.h"
+#endif
+#if LCD_BUS == LCD_BUS_MIPI
+#include "esp_dma_utils.h"
+#include "esp_lcd_mipi_dsi.h"
+#endif
+
 static const char* TAG = "lcd";
 static esp_lcd_panel_handle_t panel_handle = NULL;
 static esp_lcd_panel_io_handle_t io_handle = NULL;
+#if LCD_BUS == LCD_BUS_MIPI
+static esp_ldo_channel_handle_t ldo_mipi_phy = NULL;
+static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
+#endif
 static size_t draw_buffer_size = 0;
 static void* draw_buffer = NULL;
 #ifdef LCD_DMA
@@ -38,23 +50,30 @@ void lcd_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, void *bitmap)
     lcd_flush_complete();
 #endif
 }
-#ifdef LCD_PIN_NUM_VSYNC
+
+#if LCD_BUS == LCD_BUS_RGB
 // LCD Panel API calls this
-bool lcd_flush_complete(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx) {
+static IRAM_ATTR bool lcd_on_flush_complete(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx) {
     is_vsync = 0;
     // let the display know the flush has finished
     lcd_flush_complete();
     return true;
 }
-
 // LCD Panel API calls this
-bool lcd_vsync(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx) {
+static IRAM_ATTR bool lcd_vsync(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx) {
     is_vsync=1;
     return true;
 }
 #endif
-#if defined(LCD_SPI_HOST) || defined(LCD_I2C_HOST)
+#if LCD_BUS==LCD_BUS_SPI || LCD_BUS==LCD_BUS_I2C || LCD_BUS==LCD_BUS_I8080
 static IRAM_ATTR bool lcd_on_flush_complete(esp_lcd_panel_io_handle_t lcd_io, esp_lcd_panel_io_event_data_t* edata, void* user_ctx) {
+    // let the display know the flush has finished
+    lcd_flush_complete();
+    return true;
+}
+#endif
+#if LCD_BUS == LCD_BUS_MIPI
+static IRAM_ATTR bool lcd_on_flush_complete(esp_lcd_panel_handle_t panel, esp_lcd_dpi_panel_event_data_t *edata, void *user_ctx) {
     // let the display know the flush has finished
     lcd_flush_complete();
     return true;
@@ -75,7 +94,16 @@ void lcd_init(void) {
     gpio_set_level((gpio_num_t)LCD_PIN_NUM_BCKL, LCD_BCKL_OFF_LEVEL);
 #endif
 #endif
-#ifdef LCD_PIN_NUM_VSYNC
+    // Turn on the power for MIPI DSI PHY, so it can go from "No Power" state to "Shutdown" state
+#ifdef LCD_PHY_PWR_LDO_CHAN
+    esp_ldo_channel_config_t ldo_mipi_phy_config = {
+        .chan_id = LCD_MIPI_DSI_PHY_PWR_LDO_CHAN,
+        .voltage_mv = LCD_MIPI_DSI_PHY_PWR_LDO_VOLTAGE_MV,
+    };
+    ESP_ERROR_CHECK(esp_ldo_acquire_channel(&ldo_mipi_phy_config, &ldo_mipi_phy));
+#endif
+
+#if LCD_BUS == LCD_RGB
     esp_lcd_rgb_panel_config_t panel_config;
     memset(&panel_config,0,sizeof(esp_lcd_rgb_panel_config_t));
     panel_config.data_width = 16; // RGB565 in parallel mode, thus 16bit in width
@@ -87,7 +115,16 @@ void lcd_init(void) {
     panel_config.vsync_gpio_num = LCD_PIN_NUM_VSYNC,
     panel_config.hsync_gpio_num = LCD_PIN_NUM_HSYNC,
     panel_config.de_gpio_num = LCD_PIN_NUM_DE,
-#if !defined(LCD_SWAP_COLOR_BYTES) || LCD_SWAP_COLOR_BYTES == false
+#if LCD_BIT_DEPTH == 8
+    panel_config.data_gpio_nums[8]=LCD_PIN_NUM_D08;
+    panel_config.data_gpio_nums[9]=LCD_PIN_NUM_D09;
+    panel_config.data_gpio_nums[10]=LCD_PIN_NUM_D10;
+    panel_config.data_gpio_nums[11]=LCD_PIN_NUM_D11;
+    panel_config.data_gpio_nums[12]=LCD_PIN_NUM_D12;
+    panel_config.data_gpio_nums[13]=LCD_PIN_NUM_D13;
+    panel_config.data_gpio_nums[14]=LCD_PIN_NUM_D14;
+    panel_config.data_gpio_nums[15]=LCD_PIN_NUM_D15;
+#elif !defined(LCD_SWAP_COLOR_BYTES) || LCD_SWAP_COLOR_BYTES == false
     panel_config.data_gpio_nums[0]=LCD_PIN_NUM_D00;
     panel_config.data_gpio_nums[1]=LCD_PIN_NUM_D01;
     panel_config.data_gpio_nums[2]=LCD_PIN_NUM_D02;
@@ -156,10 +193,10 @@ void lcd_init(void) {
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
 #endif
-#ifdef LCD_SPI_HOST
+#if LCD_BUS == LCD_BUS_SPI
     spi_bus_config_t spi_cfg;
     memset(&spi_cfg,0,sizeof(spi_cfg));
-    uint32_t spi_sz = (((LCD_WIDTH*(LCD_HEIGHT/LCD_DIVISOR)*LCD_BIT_DEPTH))+7)/8+8;
+    uint32_t spi_sz = LCD_TRANSFER_SIZE+8;
     if(spi_sz>32*1024) {
         ESP_LOGW(TAG,"SPI transfer size is limited to 32KB, but draw buffer demands more. Increase the LCD_DIVISOR");
         spi_sz = 32*1024;
@@ -196,7 +233,7 @@ void lcd_init(void) {
 #endif
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)LCD_SPI_HOST, &lcd_spi_cfg, &io_handle));
 #endif
-#ifdef LCD_I2C_HOST
+#if LCD_BUS == LCD_BUS_I2C
 #ifndef LEGACY_I2C
     i2c_master_bus_config_t i2c_cfg;
     i2c_master_bus_handle_t i2c_bus_handle;
@@ -228,7 +265,6 @@ void lcd_init(void) {
     ESP_ERROR_CHECK(i2c_driver_install((i2c_port_t)LCD_I2C_HOST,I2C_MODE_MASTER,0,0,0));
     ESP_ERROR_CHECK(i2c_param_config((i2c_port_t)LCD_I2C_HOST,&i2c_cfg));
 #endif    
-    
     esp_lcd_panel_io_i2c_config_t lcd_i2c_cfg;
     memset(&lcd_i2c_cfg,0,sizeof(lcd_i2c_cfg));
     lcd_i2c_cfg.control_phase_bytes = LCD_CONTROL_PHASE_BYTES;
@@ -259,6 +295,46 @@ void lcd_init(void) {
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c_v1((uint32_t)LCD_I2C_HOST, &lcd_i2c_cfg, &io_handle));
 #endif
 #endif
+#if LCD_BUS == LCD_BUS_MIPI
+    esp_lcd_dsi_bus_config_t dsi_bus_config = {                                                    \
+        .bus_id = LCD_MIPI_BUS_ID,                                     
+        .num_data_lanes = LCD_MIPI_LANES,                             
+        .phy_clk_src = LCD_MIPI_CLK_SRC,     
+        .lane_bit_rate_mbps = LCD_MIPI_LANE_MBPS,                      
+    };
+    ESP_ERROR_CHECK(esp_lcd_new_dsi_bus(&dsi_bus_config, &mipi_dsi_bus));
+    
+    esp_lcd_dbi_io_config_t dbi_config = {                                 
+        .virtual_channel = LCD_MIPI_CHANNEL,         
+        .lcd_cmd_bits = LCD_CMD_BITS,            
+        .lcd_param_bits = LCD_PARAM_BITS,          
+    };
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_dbi(mipi_dsi_bus, &dbi_config, &io_handle));
+
+    esp_lcd_dpi_panel_config_t dpi_config=// = ST7703_720_720_PANEL_60HZ_DPI_CONFIG(MIPI_DPI_PX_FORMAT);
+    {   
+        .virtual_channel = LCD_MIPI_CHANNEL,                                                                             
+        .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     
+        .dpi_clock_freq_mhz = LCD_PIXEL_CLOCK_HZ/(1000 * 1000),                        
+        .pixel_format = MIPI_DPI_PX_FORMAT,         
+        .num_fbs = 1,                                    
+        .video_timing = {                                
+            .h_size = LCD_HRES,                               
+            .v_size = LCD_VRES,                               
+            .hsync_pulse_width = LCD_HSYNC_PULSE_WIDTH,                     
+            .hsync_back_porch = LCD_HSYNC_BACK_PORCH,                     
+            .hsync_front_porch = LCD_HSYNC_FRONT_PORCH,                    
+            .vsync_pulse_width = LCD_VSYNC_PULSE_WIDTH,                     
+            .vsync_back_porch = LCD_VSYNC_BACK_PORCH,                      
+            .vsync_front_porch = LCD_VSYNC_FRONT_PORCH,                     
+        },           
+#ifdef LCD_MIPI_DMA2D                                    
+        .flags.use_dma2d = 1,
+#endif
+    };
+
+#endif
+
     esp_lcd_panel_dev_config_t panel_config;
     memset(&panel_config,0,sizeof(panel_config));
 #ifdef LCD_PANEL_VENDOR_CONFIG
@@ -273,8 +349,8 @@ void lcd_init(void) {
     panel_config.rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB;
 #elif LCD_COLOR_SPACE == LCD_BGR
     panel_config.rgb_ele_order = LCD_RGB_ELEMENT_ORDER_BGR;
-#elif LCD_COLOR_SPACE == LCD_MONO
-    // TODO: test this out
+#elif LCD_COLOR_SPACE == LCD_GSC
+    // seems to work
     panel_config.rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB;
 #endif
 #ifdef LCD_DATA_ENDIAN_LITTLE
@@ -288,9 +364,17 @@ void lcd_init(void) {
 #else
     panel_config.vendor_config = NULL;
 #endif
+
     ESP_ERROR_CHECK(LCD_PANEL(io_handle, &panel_config, &panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
+#if LCD_BUS == LCD_BUS_MIPI
+    esp_lcd_dpi_panel_event_callbacks_t mipi_cbs = {
+        .on_color_trans_done = lcd_on_flush_complete,
+    };
+    ESP_ERROR_CHECK(esp_lcd_dpi_panel_register_event_callbacks(panel_handle, &mipi_cbs, NULL));
+#endif
+
     int gap_x = 0, gap_y = 0;
 #ifdef LCD_GAP_X
     gap_x = LCD_GAP_X;
@@ -331,16 +415,27 @@ void lcd_init(void) {
     gpio_set_level((gpio_num_t)LCD_PIN_NUM_BCKL, LCD_BCKL_ON_LEVEL);
 #endif
 #endif
+    uint32_t heap_caps = MALLOC_CAP_8BIT;
+#ifdef LCD_TRANSFER_IN_SPIRAM
+    heap_caps |= MALLOC_CAP_SPIRAM;
+#else
+    heap_caps |= MALLOC_CAP_INTERNAL;
+#endif
     // it's recommended to allocate the draw buffer from internal memory, for better performance
-    draw_buffer_size = (((LCD_WIDTH*(LCD_HEIGHT/LCD_DIVISOR)*LCD_BIT_DEPTH))+7)/8;
-    draw_buffer = heap_caps_malloc(draw_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    draw_buffer_size = LCD_TRANSFER_SIZE;
+    draw_buffer = heap_caps_malloc(draw_buffer_size, heap_caps);
     if(draw_buffer==NULL) {
         ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
     }
 #ifdef LCD_DMA
-    draw_buffer2 = heap_caps_malloc(draw_buffer_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+    draw_buffer2 = heap_caps_malloc(draw_buffer_size, heap_caps);
     if(draw_buffer2==NULL) {
         ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
     }
 #endif
 }
+
+void* lcd_transfer_buffer(void) { return draw_buffer; }
+#ifdef LCD_DMA
+void* lcd_transfer_buffer2(void) { return draw_buffer2; }
+#endif

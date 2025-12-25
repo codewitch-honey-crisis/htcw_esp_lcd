@@ -514,7 +514,7 @@
 #define LCD_PANEL esp_lcd_new_panel_ssd1306
 #define LCD_HRES 128
 #define LCD_VRES 64
-#define LCD_COLOR_SPACE LCD_MONO
+#define LCD_COLOR_SPACE LCD_GSC
 #define LCD_PIXEL_CLOCK_HZ (400 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
@@ -551,6 +551,52 @@
 #define LCD_SWAP_XY false
 #endif // ESP_USB_OTG
 
+#ifdef WAVESHARE_P4
+#include "esp_lcd_st7703.h"
+#define LCD_DMA
+#define LCD_TRANSFER_IN_SPIRAM
+#define LCD_BCKL_ON_LEVEL 0
+#define LCD_HRES 720
+#define LCD_VRES 720
+#define LCD_HSYNC_FRONT_PORCH 80
+#define LCD_HSYNC_PULSE_WIDTH 20
+#define LCD_HSYNC_BACK_PORCH 80
+#define LCD_VSYNC_FRONT_PORCH 30
+#define LCD_VSYNC_PULSE_WIDTH 4
+#define LCD_VSYNC_BACK_PORCH 12
+#define LCD_BIT_DEPTH 16
+#define LCD_MIPI_DMA2D
+#define LCD_PANEL esp_lcd_new_panel_st7703
+#define LCD_DATA_ENDIAN_LITTLE
+#define LCD_MIPI_DSI_PHY_PWR_LDO_CHAN (3)
+#define LCD_MIPI_DSI_PHY_PWR_LDO_VOLTAGE_MV (2500)
+#define LCD_PANEL_VENDOR_CONFIG \
+st7703_vendor_config_t vendor_config = { \
+    .mipi_config = { \
+        .dsi_bus = mipi_dsi_bus, \
+        .dpi_config = &dpi_config, \
+    }, \
+    .flags = { \
+        .use_mipi_interface = 1, \
+    }, \
+}
+#define LCD_PIN_NUM_RST 27
+#define LCD_PIN_NUM_BCKL 26
+#define LCD_PHY_PWR_LDO_CHAN
+#define LCD_PIXEL_CLOCK_HZ (46 * 1000 * 1000)
+#define TOUCH_VRES LCD_VRES
+#define TOUCH_HRES LCD_HRES
+#define TOUCH_CLOCK_HZ (100*1000)
+#define TOUCH_I2C_HOST I2C_NUM_0
+#define TOUCH_PIN_NUM_SDA 7
+#define TOUCH_PIN_NUM_SCL 8
+#define TOUCH_MIRROR_X false
+#define TOUCH_MIRROR_Y false
+#define TOUCH_RST_LEVEL 0
+#define TOUCH_INT_LEVEL 0
+#define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
+#endif // WAVESHARE_P4
+
 // For testing. No actual integrated display
 #ifdef C6DEVKITC1
 #if __has_include(<ssd1306_surface_adapter.hpp>)
@@ -568,7 +614,7 @@
 #define LCD_PANEL esp_lcd_new_panel_ssd1306
 #define LCD_HRES 128
 #define LCD_VRES 32
-#define LCD_COLOR_SPACE LCD_MONO
+#define LCD_COLOR_SPACE LCD_GSC
 #define LCD_PIXEL_CLOCK_HZ (400 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
@@ -627,9 +673,6 @@
 #ifndef LCD_DIVISOR
 #define LCD_DIVISOR 10
 #endif
-#define LCD_RGB 1
-#define LCD_BGR 2
-#define LCD_MONO 3
 #ifdef LCD_PIN_NUM_BCKL
 #if LCD_PIN_NUM_BCKL > -1
 #ifndef LCD_BCKL_ON_LEVEL
@@ -640,5 +683,56 @@
 #endif
 #endif
 #endif
+#ifndef LCD_TRANSFER_SIZE
+#define LCD_TRANSFER_SIZE ((((LCD_WIDTH*(LCD_HEIGHT/LCD_DIVISOR)*LCD_BIT_DEPTH))+7)/8)
+#endif
 
+#ifndef LCD_BUS
+#if defined(LCD_HSYNC_FRONT_PORCH) && defined(LCD_PIN_NUM_D0)
+#define LCD_BUS LCD_BUS_RGB
+#elif defined(LCD_HSYNC_FRONT_PORCH) 
+#define LCD_BUS LCD_BUS_MIPI
+#elif defined(LCD_PIN_NUM_D0)
+#define LCD_BUS LCD_BUS_I8080
+#elif defined(LCD_SPI_HOST)
+#define LCD_BUS LCD_BUS_SPI
+#elif defined(LCD_I2C_HOST)
+#define LCD_BUS LCD_BUS_I2C
+#endif
+#endif
+
+#define LCD_RGB 1
+#define LCD_BGR 2
+#define LCD_GSC 3
+#define LCD_BUS_SPI 1
+#define LCD_BUS_I2C 2
+#define LCD_BUS_I8080 3
+#define LCD_BUS_RGB 4
+#define LCD_BUS_MIPI 5
+
+#if LCD_BUS == LCD_BUS_MIPI
+#if LCD_BIT_DEPTH == 24
+#define MIPI_DPI_PX_FORMAT (LCD_COLOR_PIXEL_FORMAT_RGB888)
+#elif LCD_BIT_DEPTH == 18
+// not supported
+#define MIPI_DPI_PX_FORMAT (LCD_COLOR_PIXEL_FORMAT_RGB666)
+#elif LCD_BIT_DEPTH == 16
+#define MIPI_DPI_PX_FORMAT (LCD_COLOR_PIXEL_FORMAT_RGB565)
+#endif
+#ifndef LCD_MIPI_BUS_ID
+#define LCD_MIPI_BUS_ID 0
+#endif
+#ifndef LCD_MIPI_LANES
+#define LCD_MIPI_LANES 2
+#endif
+#ifndef LCD_MIPI_LANE_MBPS
+#define LCD_MIPI_LANE_MBPS 1000
+#endif
+#ifndef LCD_MIPI_CLK_SRC
+#define LCD_MIPI_CLK_SRC MIPI_DSI_PHY_CLK_SRC_DEFAULT
+#endif
+#ifndef LCD_MIPI_CHANNEL
+#define LCD_MIPI_CHANNEL 0
+#endif
+#endif
 #endif // LCD_CONFIG_H

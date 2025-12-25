@@ -17,6 +17,15 @@ void lcd_init(void);
 void lcd_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, void* bitmap);
 /// @brief Called when a transfer is complete. To be implemented by the lcd_init() caller
 void lcd_flush_complete(void);
+
+/// @brief Returns the transfer buffer 
+/// @return A pointer to the transfer buffer, of size LCD_TRANSFER_SIZE
+void* lcd_transfer_buffer(void);
+#ifdef LCD_DMA
+/// @brief Returns the secondary transfer buffer 
+/// @return A pointer to the secondary transfer buffer, of size LCD_TRANSFER_SIZE
+void* lcd_transfer_buffer2(void);
+#endif
 #ifdef __cplusplus
 }
 #endif

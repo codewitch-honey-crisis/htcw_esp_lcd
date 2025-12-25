@@ -1,52 +1,38 @@
-/*
- * SPDX-FileCopyrightText: 2021-2025 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: CC0-1.0
- */
-
 #include <stdio.h>
 #include <memory.h>
 #include "lcd.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define I2C_BUS_PORT  0
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ    (200 * 1000)
-#define EXAMPLE_PIN_NUM_SDA           10
-#define EXAMPLE_PIN_NUM_SCL           11
-#define EXAMPLE_PIN_NUM_RST           -1
-#define EXAMPLE_I2C_HW_ADDR           0x3C
-
-// The pixel number in horizontal and vertical
-#define EXAMPLE_LCD_H_RES              128
-#define EXAMPLE_LCD_V_RES              32
-// Bit number used to represent command and parameter
-#define EXAMPLE_LCD_CMD_BITS           8
-#define EXAMPLE_LCD_PARAM_BITS         8
 volatile int flushing = 0;
 void lcd_flush_complete(void) {
     flushing = 0;
+}
+void clear_screen(uint16_t color) {
+    vTaskDelay(5);
+    uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
+    for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
+        *buf++=color;
+    }
+    int y = 0;
+    while(y<LCD_HEIGHT) {
+        int yend = y+(LCD_HEIGHT/LCD_DIVISOR)-1;
+        if(yend>=LCD_HEIGHT) {
+            yend = LCD_HEIGHT-1;
+        }
+        while(flushing) portYIELD(); 
+        flushing = 1;
+        printf("flushing %d - %d\n",y,yend);
+        lcd_flush(0,y,LCD_WIDTH-1,yend,lcd_transfer_buffer());
+        y= yend+1;
+    }
 }
 void app_main(void)
 {
     vTaskDelay(pdMS_TO_TICKS(1000));
     lcd_init();
-
-    uint8_t buf[(EXAMPLE_LCD_H_RES*EXAMPLE_LCD_V_RES+7)/8];
     while(1) {
-        vTaskDelay(5);
-        while(flushing) portYIELD(); 
-        flushing = 1;
-        memset(buf,0xFF,sizeof(buf));
-        lcd_flush(0,0,LCD_WIDTH-1,LCD_HEIGHT-1,buf);
-        while(flushing) portYIELD(); 
-        flushing = 1;
-        memset(buf,0x0,sizeof(buf));
-        lcd_flush(0,0,LCD_WIDTH-1,LCD_HEIGHT-1,buf);
+        clear_screen(0xFFFF);
+        clear_screen(0x0000);
     }
-
 }
