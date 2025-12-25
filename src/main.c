@@ -4,10 +4,13 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #ifdef LCD_BUS
+#define CLEAR_DELAY 125
+#ifndef LCD_NO_DMA
 volatile int flushing = 0;
 void lcd_flush_complete(void) {
     flushing = 0;
 }
+#endif
 void clear_screen(uint16_t color) {
     uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
     for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
@@ -19,13 +22,22 @@ void clear_screen(uint16_t color) {
         if(yend>=LCD_HEIGHT) {
             yend = LCD_HEIGHT-1;
         }
+#ifndef LCD_NO_DMA
         while(flushing) portYIELD(); 
         flushing = 1;
+#endif
         lcd_flush(0,y,LCD_WIDTH-1,yend,lcd_transfer_buffer());
         y= yend+1;
         while(lcd_vsync_flush_count()) portYIELD();
     }
 }
+#endif
+#if LCD_BIT_DEPTH == 16 && LCD_COLOR_SPACE != LCD_COLOR_GSC
+#define COLOR_BLACK (0)
+#define COLOR_WHITE (0xFFFF)
+#define COLOR_RED (31<<11)
+#define COLOR_GREEN (63<<5)
+#define COLOR_BLUE (31)
 #endif
 void app_main(void)
 {
@@ -41,9 +53,17 @@ void app_main(void)
 #endif
     while(1) {
         vTaskDelay(5);
-#ifdef LCD_BUS
-        clear_screen(0xFFFF);
-        clear_screen(0x0000);
+#ifdef COLOR_BLACK
+        clear_screen(COLOR_BLACK);
+        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
+        clear_screen(COLOR_RED);
+        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
+        clear_screen(COLOR_GREEN);
+        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
+        clear_screen(COLOR_BLUE);
+        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
+        clear_screen(COLOR_WHITE);
+        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
 #endif
 #ifdef TOUCH_BUS
         touch_update();

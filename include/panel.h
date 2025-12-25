@@ -112,6 +112,28 @@ extern "C" {
 #ifndef TOUCH_PARAM_BITS
 #define TOUCH_PARAM_BITS 8
 #endif
+#ifndef TOUCH_HRES
+#define TOUCH_HRES LCD_HRES
+#endif
+#ifndef TOUCH_VRES
+#define TOUCH_VRES LCD_VRES
+#endif
+#ifndef TOUCH_MIRROR_X
+#ifdef LCD_MIRROR_X
+#define TOUCH_MIRROR_X LCD_MIRROR_X
+#endif
+#endif
+#ifndef TOUCH_MIRROR_Y
+#ifdef LCD_MIRROR_Y
+#define TOUCH_MIRROR_Y LCD_MIRROR_Y
+#endif
+#endif
+#ifndef TOUCH_SWAP_XY
+#ifdef LCD_SWAP_XY
+#define TOUCH_SWAP_XY LCD_SWAP_XY
+#endif
+#endif
+
 #ifndef TOUCH_WIDTH
 #ifdef TOUCH_SWAP_XY
 #if TOUCH_SWAP_XY
@@ -175,17 +197,19 @@ void lcd_init(void);
 /// @param y2 The y2 coord
 /// @param bitmap The bitmap data
 void lcd_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, void* bitmap);
-/// @brief Called when a transfer is complete. To be implemented by the lcd_init() caller
-void lcd_flush_complete(void);
 #if LCD_TRANSFER_SIZE > 0
 /// @brief Returns the transfer buffer 
 /// @return A pointer to the transfer buffer, of size LCD_TRANSFER_SIZE
 void* lcd_transfer_buffer(void);
-#ifdef LCD_DMA
+#ifndef LCD_NO_DMA
 /// @brief Returns the secondary transfer buffer 
 /// @return A pointer to the secondary transfer buffer, of size LCD_TRANSFER_SIZE
 void* lcd_transfer_buffer2(void);
 #endif
+#endif
+#ifndef LCD_NO_DMA
+/// @brief Called when a transfer is complete. To be implemented by the lcd_init() caller
+void lcd_flush_complete(void);
 #endif
 /// @brief Indicates how many flushes have occurred since the vblanking period was active
 /// @return The number of draws that have occurred, or 0 if not supported

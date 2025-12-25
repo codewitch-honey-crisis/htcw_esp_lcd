@@ -36,7 +36,7 @@ static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 #endif
 #if LCD_TRANSFER_SIZE > 0
 static void* draw_buffer = NULL;
-#ifdef LCD_DMA
+#ifndef LCD_NO_DMA
 static void* draw_buffer2 = NULL;
 #endif
 #endif
@@ -133,7 +133,7 @@ static void i2c_init() {
         i2c_cfg.glitch_ignore_cnt = 7;
         i2c_cfg.i2c_port = (i2c_port_num_t)LCD_I2C_HOST;
         // Doesn't actually work, which is why it's commented out.
-// #ifdef LCD_DMA
+// #ifndef LCD_NO_DMA
 //      i2c_cfg.trans_queue_depth = 10;
 // #endif
         i2c_cfg.sda_io_num = (gpio_num_t)LCD_PIN_NUM_SDA;
@@ -144,8 +144,8 @@ static void i2c_init() {
 #else
         i2c_config_t i2c_cfg;
         memset(&i2c_cfg,0,sizeof(i2c_cfg));
-#ifdef LCD_PIXEL_CLOCK_HZ
-        i2c_cfg.master.clk_speed = LCD_PIXEL_CLOCK_HZ;
+#ifdef LCD_CLOCK_HZ
+        i2c_cfg.master.clk_speed = LCD_CLOCK_HZ;
 #else
         i2c_cfg.master.clk_speed = 100 * 1000;
 #endif
@@ -220,12 +220,9 @@ void lcd_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, void *bitmap)
 #if LCD_PIN_NUM_VSYNC
     vsync_count = vsync_count + 1;
 #endif
-#ifndef LCD_DMA
-    lcd_flush_complete();
-#endif
 }
 
-#if LCD_BUS == PANEL_BUS_RGB
+#if !defined(LCD_NO_DMA) && LCD_BUS == PANEL_BUS_RGB
 // LCD Panel API calls this
 static IRAM_ATTR bool on_flush_complete(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *edata, void *user_ctx) {
     // let the display know the flush has finished
@@ -238,14 +235,14 @@ static IRAM_ATTR bool on_vsync(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_p
     return true;
 }
 #endif
-#if LCD_BUS==PANEL_BUS_SPI || LCD_BUS==PANEL_BUS_I2C || LCD_BUS==PANEL_BUS_I8080
+#if !defined(LCD_NO_DMA) && (LCD_BUS==PANEL_BUS_SPI || LCD_BUS==PANEL_BUS_I2C || LCD_BUS==PANEL_BUS_I8080)
 static IRAM_ATTR bool on_flush_complete(esp_lcd_panel_io_handle_t lcd_io, esp_lcd_panel_io_event_data_t* edata, void* user_ctx) {
     // let the display know the flush has finished
     lcd_flush_complete();
     return true;
 }
 #endif
-#if LCD_BUS == PANEL_BUS_MIPI
+#if !defined(LCD_NO_DMA) && LCD_BUS == PANEL_BUS_MIPI
 static IRAM_ATTR bool on_flush_complete(esp_lcd_panel_handle_t panel, esp_lcd_dpi_panel_event_data_t *edata, void *user_ctx) {
     // let the display know the flush has finished
     lcd_flush_complete();
@@ -321,7 +318,7 @@ void lcd_init(void) {
     esp_lcd_panel_io_i80_config_t i80_io_cfg;
     memset(&i80_io_cfg, 0, sizeof(i80_io_cfg));
     i80_io_cfg.cs_gpio_num = LCD_PIN_NUM_CS;
-    i80_io_cfg.pclk_hz = LCD_PIXEL_CLOCK_HZ;
+    i80_io_cfg.pclk_hz = LCD_CLOCK_HZ;
     i80_io_cfg.trans_queue_depth = 20;
     i80_io_cfg.dc_levels.dc_idle_level = 0;
     i80_io_cfg.dc_levels.dc_idle_level = 0;
@@ -330,7 +327,9 @@ void lcd_init(void) {
     i80_io_cfg.dc_levels.dc_data_level = 1;
     i80_io_cfg.lcd_cmd_bits = LCD_CMD_BITS;
     i80_io_cfg.lcd_param_bits = LCD_PARAM_BITS;
+#ifndef LCD_NO_DMA
     i80_io_cfg.on_color_trans_done = on_flush_complete;
+#endif
     i80_io_cfg.user_ctx = NULL;
 #ifdef LCD_SWAP_COLOR_BYTES
     i80_io_cfg.flags.swap_color_bytes = LCD_SWAP_COLOR_BYTES;
@@ -399,7 +398,7 @@ void lcd_init(void) {
     rgb_panel_cfg.data_gpio_nums[15]=LCD_PIN_NUM_D07;
 #endif
     memset(&rgb_panel_cfg.timings,0,sizeof(esp_lcd_rgb_timing_t));
-    rgb_panel_cfg.timings.pclk_hz = LCD_PIXEL_CLOCK_HZ;
+    rgb_panel_cfg.timings.pclk_hz = LCD_CLOCK_HZ;
     rgb_panel_cfg.timings.h_res = LCD_HRES;
     rgb_panel_cfg.timings.v_res = LCD_VRES;
     rgb_panel_cfg.timings.hsync_back_porch = LCD_HSYNC_BACK_PORCH;
@@ -432,13 +431,15 @@ void lcd_init(void) {
     lcd_spi_cfg.dc_gpio_num = LCD_PIN_NUM_DC;
     lcd_spi_cfg.lcd_cmd_bits = LCD_CMD_BITS;
     lcd_spi_cfg.lcd_param_bits = LCD_PARAM_BITS;        
-#ifdef LCD_PIXEL_CLOCK_HZ
-    lcd_spi_cfg.pclk_hz = LCD_PIXEL_CLOCK_HZ;
+#ifdef LCD_CLOCK_HZ
+    lcd_spi_cfg.pclk_hz = LCD_CLOCK_HZ;
 #else
     lcd_spi_cfg.pclk_hz = 20 * 1000 * 1000;
 #endif
     lcd_spi_cfg.trans_queue_depth = 10;
+#ifndef LCD_NO_DMA
     lcd_spi_cfg.on_color_trans_done = on_flush_complete;
+#endif
 #ifdef LCD_SPI_MODE
     lcd_spi_cfg.spi_mode = LCD_SPI_MODE;
 #else
@@ -458,14 +459,14 @@ void lcd_init(void) {
 #endif
     lcd_i2c_cfg.lcd_cmd_bits = LCD_CMD_BITS;
     lcd_i2c_cfg.lcd_param_bits = LCD_PARAM_BITS;
-#ifdef LCD_DMA
+#ifndef LCD_NO_DMA
     lcd_i2c_cfg.on_color_trans_done = on_flush_complete;
 #else
     lcd_i2c_cfg.on_color_trans_done = NULL;
 #endif
 #ifndef LEGACY_I2C
-#ifdef LCD_PIXEL_CLOCK_HZ
-    lcd_i2c_cfg.scl_speed_hz = LCD_PIXEL_CLOCK_HZ;
+#ifdef LCD_CLOCK_HZ
+    lcd_i2c_cfg.scl_speed_hz = LCD_CLOCK_HZ;
 #else
     lcd_i2c_cfg.scl_speed_hz = 100 * 1000;
 #endif
@@ -498,7 +499,7 @@ void lcd_init(void) {
     {   
         .virtual_channel = LCD_MIPI_CHANNEL,                                                                             
         .dpi_clk_src = MIPI_DSI_DPI_CLK_SRC_DEFAULT,     
-        .dpi_clock_freq_mhz = LCD_PIXEL_CLOCK_HZ/(1000 * 1000),                        
+        .dpi_clock_freq_mhz = LCD_CLOCK_HZ/(1000 * 1000),                        
         .pixel_format = MIPI_DPI_PX_FORMAT,         
         .num_fbs = 1,                                    
         .video_timing = {                                
@@ -553,14 +554,16 @@ void lcd_init(void) {
     ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&rgb_panel_cfg, &lcd_handle));   
     esp_lcd_rgb_panel_event_callbacks_t rgb_cbs;
     memset(&rgb_cbs,0,sizeof(rgb_cbs));
+#ifndef LCD_NO_DMA
     rgb_cbs.on_color_trans_done = on_flush_complete;
+#endif
     rgb_cbs.on_vsync = on_vsync;
     esp_lcd_rgb_panel_register_event_callbacks(lcd_handle,&rgb_cbs,NULL);
     
 #endif
     ESP_ERROR_CHECK(esp_lcd_panel_reset(lcd_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(lcd_handle));
-#if LCD_BUS == PANEL_BUS_MIPI
+#if LCD_BUS == PANEL_BUS_MIPI && !defined(LCD_NO_DMA)
     esp_lcd_dpi_panel_event_callbacks_t mipi_cbs = {
         .on_color_trans_done = on_flush_complete,
     };
@@ -621,7 +624,7 @@ void lcd_init(void) {
     if(draw_buffer==NULL) {
         ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
     }
-#ifdef LCD_DMA
+#ifndef LCD_NO_DMA
     draw_buffer2 = heap_caps_malloc(LCD_TRANSFER_SIZE, heap_caps);
     if(draw_buffer2==NULL) {
         ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
@@ -631,7 +634,7 @@ void lcd_init(void) {
 }
 #if LCD_TRANSFER_SIZE > 0
 void* lcd_transfer_buffer(void) { return draw_buffer; }
-#ifdef LCD_DMA
+#ifndef LCD_NO_DMA
 void* lcd_transfer_buffer2(void) { return draw_buffer2; }
 #endif
 #endif

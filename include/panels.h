@@ -16,7 +16,7 @@
 #define LCD_HRES 135
 #define LCD_VRES 240
 #define LCD_COLOR_SPACE LCD_COLOR_RGB
-#define LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 40
 #define LCD_GAP_Y 52
 #define LCD_MIRROR_X false
@@ -44,7 +44,7 @@
 #define LCD_HRES 240
 #define LCD_VRES 320
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X false
@@ -67,7 +67,7 @@
 #define LCD_HRES 320
 #define LCD_VRES 240
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X false
@@ -90,7 +90,7 @@
 #define LCD_HRES 240
 #define LCD_VRES 320
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X false
@@ -141,9 +141,9 @@
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_SWAP_COLOR_BYTES true
 #ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_PIXEL_CLOCK_HZ (6 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
 #else
-    #define LCD_PIXEL_CLOCK_HZ (10 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (10 * 1000 * 1000)
 #endif
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_4
 
@@ -186,9 +186,9 @@
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_SWAP_COLOR_BYTES false
 #ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_PIXEL_CLOCK_HZ (6 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
 #else
-    #define LCD_PIXEL_CLOCK_HZ (16 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (16 * 1000 * 1000)
 #endif
 #define TOUCH_I2C_HOST I2C_NUM_0
 #define TOUCH_PIN_NUM_SCL 18
@@ -254,9 +254,9 @@
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_SWAP_COLOR_BYTES false
 #ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_PIXEL_CLOCK_HZ (6 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
 #else
-    #define LCD_PIXEL_CLOCK_HZ (10 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (10 * 1000 * 1000)
 #endif
 #define LCD_PSRAM_BUFFER (1024*100*2)
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_7
@@ -302,9 +302,9 @@
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_SWAP_COLOR_BYTES false
 #ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_PIXEL_CLOCK_HZ (6 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
 #else
-    #define LCD_PIXEL_CLOCK_HZ (14 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (14 * 1000 * 1000)
 #endif
 #define TOUCH_I2C_HOST I2C_NUM_0
 #define TOUCH_PIN_NUM_SCL           9
@@ -378,7 +378,7 @@
 #define LCD_HRES 170
 #define LCD_VRES 320
 #define LCD_COLOR_SPACE LCD_COLOR_RGB
-#define LCD_PIXEL_CLOCK_HZ (6528 * 1000)
+#define LCD_CLOCK_HZ (6528 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 35
 #define LCD_MIRROR_X false
@@ -401,7 +401,7 @@
 #define LCD_HRES 128
 #define LCD_VRES 128
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 2
 #define LCD_GAP_Y 1
 #define LCD_MIRROR_X true
@@ -423,7 +423,7 @@
 #define LCD_HRES 128
 #define LCD_VRES 128
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 2
 #define LCD_GAP_Y 1
 #define LCD_MIRROR_X true
@@ -471,9 +471,9 @@
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_SWAP_COLOR_BYTES false
 #ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_PIXEL_CLOCK_HZ (6 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
 #else
-    #define LCD_PIXEL_CLOCK_HZ (8 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (8 * 1000 * 1000)
 #endif
 #endif // T_RGB
 
@@ -517,9 +517,9 @@
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_SWAP_COLOR_BYTES false
 #ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_PIXEL_CLOCK_HZ (6 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
 #else
-    #define LCD_PIXEL_CLOCK_HZ (16 * 1000 * 1000)
+    #define LCD_CLOCK_HZ (16 * 1000 * 1000)
 #endif
 #endif // SUNTON_7INCH
 
@@ -540,7 +540,7 @@
 #define LCD_HRES 128
 #define LCD_VRES 64
 #define LCD_COLOR_SPACE LCD_COLOR_GSC
-#define LCD_PIXEL_CLOCK_HZ (400 * 1000)
+#define LCD_CLOCK_HZ (400 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X true
@@ -567,7 +567,7 @@
 #define LCD_HRES 240
 #define LCD_VRES 240
 #define LCD_COLOR_SPACE LCD_COLOR_RGB
-#define LCD_PIXEL_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X false
@@ -608,7 +608,7 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_PIN_NUM_RST 27
 #define LCD_PIN_NUM_BCKL 26
 #define LCD_PHY_PWR_LDO_CHAN
-#define LCD_PIXEL_CLOCK_HZ (46 * 1000 * 1000)
+#define LCD_CLOCK_HZ (46 * 1000 * 1000)
 #endif // WAVESHARE_P4_SMART86BOX
 
 #ifdef MATOUCH_ESP_DISPLAY_PARALLEL_35
@@ -639,7 +639,7 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_HRES 320
 #define LCD_VRES 480
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_PIXEL_CLOCK_HZ (20 * 1000 * 1000)
+#define LCD_CLOCK_HZ (20 * 1000 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X true
@@ -649,6 +649,37 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_SWAP_COLOR_BYTES true
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_35
 
+#ifdef FREENOVE_S3_DEVKIT
+#include "esp_lcd_touch_ft6x36.h"
+#define LCD_SPI_HOST SPI3_HOST
+#define LCD_NO_DMA
+#define LCD_PIN_NUM_DC 0
+#define LCD_PIN_NUM_CS 47
+#define LCD_PIN_NUM_MOSI 20
+#define LCD_PIN_NUM_CLK 21
+#define LCD_HRES 240
+#define LCD_VRES 320
+#define LCD_COLOR_SPACE LCD_COLOR_BGR
+#define LCD_CLOCK_HZ (80 * 1000 * 1000)
+#define LCD_MIRROR_X true
+#define LCD_MIRROR_Y true
+#define LCD_PANEL esp_lcd_new_panel_st7789
+#define LCD_INVERT_COLOR false
+#define LCD_SWAP_XY true
+
+#define TOUCH_I2C_HOST I2C_NUM_0
+#define TOUCH_PIN_NUM_SCL 1
+#define TOUCH_PIN_NUM_SDA 2
+
+#define TOUCH_PANEL esp_lcd_touch_new_i2c_ft6x36
+#define TOUCH_ADDRESS ESP_LCD_TOUCH_IO_I2C_FT6x36_ADDRESS
+#define TOUCH_CMD_BITS 8
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
+#define TOUCH_CLOCK_HZ (200*1000)
+#define TOUCH_PIN_NUM_RST -1
+
+#endif // FREENOVE_S3_DEVKIT
 
 // For testing. No actual integrated display
 #ifdef C6DEVKITC1
@@ -668,7 +699,7 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_HRES 128
 #define LCD_VRES 32
 #define LCD_COLOR_SPACE LCD_COLOR_GSC
-#define LCD_PIXEL_CLOCK_HZ (400 * 1000)
+#define LCD_CLOCK_HZ (400 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X true
