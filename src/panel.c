@@ -34,10 +34,11 @@ static esp_lcd_panel_io_handle_t lcd_io_handle = NULL;
 static esp_ldo_channel_handle_t ldo_mipi_phy = NULL;
 static esp_lcd_dsi_bus_handle_t mipi_dsi_bus = NULL;
 #endif
-static size_t draw_buffer_size = 0;
+#if LCD_TRANSFER_SIZE > 0
 static void* draw_buffer = NULL;
 #ifdef LCD_DMA
 static void* draw_buffer2 = NULL;
+#endif
 #endif
 #ifdef LCD_PIN_NUM_VSYNC
 static volatile bool vsync_count = 0;
@@ -51,7 +52,11 @@ static void spi_init() {
     if(!spi_initialized[LCD_SPI_HOST]) {    
         spi_bus_config_t spi_cfg;
         memset(&spi_cfg,0,sizeof(spi_cfg));
+        #if LCD_TRANSFER_SIZE > 0
         uint32_t spi_sz = LCD_TRANSFER_SIZE+8;
+        #else
+        uint32_t spi_sz = 32*1024;
+        #endif
         if(spi_sz>32*1024) {
             ESP_LOGW(TAG,"SPI transfer size is limited to 32KB, but draw buffer demands more. Increase the LCD_DIVISOR");
             spi_sz = 32*1024;
@@ -590,6 +595,7 @@ void lcd_init(void) {
     gpio_set_level((gpio_num_t)LCD_PIN_NUM_BCKL, LCD_BCKL_ON_LEVEL);
 #endif
 #endif
+#if LCD_TRANSFER_SIZE > 0
     uint32_t heap_caps = MALLOC_CAP_8BIT;
 #ifdef LCD_TRANSFER_IN_SPIRAM
     heap_caps |= MALLOC_CAP_SPIRAM;
@@ -597,25 +603,25 @@ void lcd_init(void) {
     heap_caps |= MALLOC_CAP_INTERNAL;
 #endif
     // it's recommended to allocate the draw buffer from internal memory, for better performance
-    draw_buffer_size = LCD_TRANSFER_SIZE;
-    draw_buffer = heap_caps_malloc(draw_buffer_size, heap_caps);
+    draw_buffer = heap_caps_malloc(LCD_TRANSFER_SIZE, heap_caps);
     if(draw_buffer==NULL) {
         ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
     }
 #ifdef LCD_DMA
-    draw_buffer2 = heap_caps_malloc(draw_buffer_size, heap_caps);
+    draw_buffer2 = heap_caps_malloc(LCD_TRANSFER_SIZE, heap_caps);
     if(draw_buffer2==NULL) {
         ESP_ERROR_CHECK(ESP_ERR_NO_MEM);
     }
 #endif
+#endif
 }
-
+#if LCD_TRANSFER_SIZE > 0
 void* lcd_transfer_buffer(void) { return draw_buffer; }
 #ifdef LCD_DMA
 void* lcd_transfer_buffer2(void) { return draw_buffer2; }
 #endif
 #endif
-
+#endif
 #ifdef TOUCH_BUS
 static esp_lcd_panel_io_handle_t touch_io_handle = NULL;
 static esp_lcd_touch_handle_t touch_handle = NULL;
