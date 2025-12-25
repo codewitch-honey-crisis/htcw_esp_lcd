@@ -9,7 +9,6 @@ void lcd_flush_complete(void) {
     flushing = 0;
 }
 void clear_screen(uint16_t color) {
-    vTaskDelay(5);
     uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
     for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
         *buf++=color;
@@ -37,7 +36,11 @@ void app_main(void)
 #ifdef TOUCH_BUS
     touch_init();
 #endif
+#ifdef BUTTON
+    button_init();
+#endif
     while(1) {
+        vTaskDelay(5);
 #ifdef LCD_BUS
         clear_screen(0xFFFF);
         clear_screen(0x0000);
@@ -49,6 +52,12 @@ void app_main(void)
         touch_read(&count,x,y,s);
         if(count) {
             printf("touch: (%d, %d)\n",x[0],y[0]);
+        }
+#endif
+#ifdef BUTTON
+        uint64_t button_mask = button_read_all();
+        if(button_mask>0) {
+            printf("Pressed mask: 0x%llx (%lld)\n",button_mask,button_mask);
         }
 #endif
     }

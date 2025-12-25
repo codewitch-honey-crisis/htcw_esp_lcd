@@ -62,6 +62,16 @@ static void spi_init() {
             spi_sz = 32*1024;
         }
         spi_cfg.max_transfer_sz = spi_sz;
+        spi_cfg.data0_io_num = -1;
+        spi_cfg.data1_io_num = -1;
+        spi_cfg.data2_io_num = -1;
+        spi_cfg.data3_io_num = -1;
+        spi_cfg.data4_io_num = -1;
+        spi_cfg.data5_io_num = -1;
+        spi_cfg.data6_io_num = -1;
+        spi_cfg.data7_io_num = -1;
+        spi_cfg.quadhd_io_num = -1;
+        spi_cfg.quadwp_io_num = -1;
         spi_cfg.mosi_io_num = LCD_PIN_NUM_MOSI;
         spi_cfg.sclk_io_num = LCD_PIN_NUM_CLK;
 #ifdef LCD_PIN_NUM_MISO
@@ -69,8 +79,6 @@ static void spi_init() {
 #else    
         spi_cfg.miso_io_num = -1;
 #endif
-        spi_cfg.quadwp_io_num = -1;
-        spi_cfg.quadhd_io_num = -1;
         ESP_ERROR_CHECK(spi_bus_initialize((spi_host_device_t)LCD_SPI_HOST,&spi_cfg,SPI_DMA_CH_AUTO));
         spi_initialized[LCD_SPI_HOST] = true;
     }
@@ -78,26 +86,33 @@ static void spi_init() {
 
 #ifdef TOUCH_BUS
 #if TOUCH_BUS == PANEL_BUS_SPI
-    if(spi_initialized[TOUCH_SPI_HOST]) {
-        return; 
-    }
-    spi_bus_config_t spi_cfg;
-    memset(&spi_cfg,0,sizeof(spi_cfg));
-    uint32_t spi_sz = TOUCH_TRANSFER_SIZE+8;
-    if(spi_sz>32*1024) {
-        ESP_LOGW(TAG,"SPI transfer size is limited to 32KB, but draw buffer demands more. Decrease TOUCH_TRANSFER_SIZE");
-        spi_sz = 32*1024;
-    }
-    spi_cfg.max_transfer_sz = spi_sz;
+    if(!spi_initialized[TOUCH_SPI_HOST]) {    
+        spi_bus_config_t spi_cfg;
+        memset(&spi_cfg,0,sizeof(spi_cfg));
+        uint32_t spi_sz = TOUCH_TRANSFER_SIZE+8;
+        if(spi_sz>32*1024) {
+            ESP_LOGW(TAG,"SPI transfer size is limited to 32KB, but touch device is set to more. Decrease TOUCH_TRANSFER_SIZE");
+            spi_sz = 32*1024;
+        }
+        spi_cfg.max_transfer_sz = spi_sz;
+        spi_cfg.data0_io_num = -1;
+        spi_cfg.data1_io_num = -1;
+        spi_cfg.data2_io_num = -1;
+        spi_cfg.data3_io_num = -1;
+        spi_cfg.data4_io_num = -1;
+        spi_cfg.data5_io_num = -1;
+        spi_cfg.data6_io_num = -1;
+        spi_cfg.data7_io_num = -1;
+        spi_cfg.quadhd_io_num = -1;
+        spi_cfg.quadwp_io_num = -1;
 #ifdef TOUCH_PIN_NUM_MOSI
-    spi_cfg.mosi_io_num = TOUCH_PIN_NUM_MOSI;
+        spi_cfg.mosi_io_num = TOUCH_PIN_NUM_MOSI;
 #endif
-    spi_cfg.sclk_io_num = TOUCH_PIN_NUM_CLK;
-    spi_cfg.miso_io_num = TOUCH_PIN_NUM_MISO;
-    spi_cfg.quadwp_io_num = -1;
-    spi_cfg.quadhd_io_num = -1;
-    ESP_ERROR_CHECK(spi_bus_initialize((spi_host_device_t)TOUCH_SPI_HOST,&spi_cfg,SPI_DMA_CH_AUTO));
-    spi_initialized[TOUCH_SPI_HOST] = true;
+        spi_cfg.sclk_io_num = TOUCH_PIN_NUM_CLK;
+        spi_cfg.miso_io_num = TOUCH_PIN_NUM_MISO;
+        ESP_ERROR_CHECK(spi_bus_initialize((spi_host_device_t)TOUCH_SPI_HOST,&spi_cfg,SPI_DMA_CH_AUTO));
+        spi_initialized[TOUCH_SPI_HOST] = true;
+    }
 #endif
 #endif
 }
@@ -424,7 +439,6 @@ void lcd_init(void) {
 #endif
     lcd_spi_cfg.trans_queue_depth = 10;
     lcd_spi_cfg.on_color_trans_done = on_flush_complete;
-    esp_lcd_panel_io_handle_t lcd_io_handle = NULL;
 #ifdef LCD_SPI_MODE
     lcd_spi_cfg.spi_mode = LCD_SPI_MODE;
 #else
@@ -726,4 +740,42 @@ void touch_read(size_t* in_out_count,uint16_t* out_x,uint16_t* out_y,uint16_t* o
 void touch_update(void) {
     ESP_ERROR_CHECK(esp_lcd_touch_read_data(touch_handle));
 }
+#endif
+
+#ifdef BUTTON
+void button_init(void) {
+    gpio_config_t cfg;
+    memset(&cfg,0,sizeof(cfg));
+    cfg.mode = GPIO_MODE_INPUT;
+    printf("MASK: %lld\n",BUTTON_MASK);
+    cfg.pin_bit_mask = BUTTON_MASK;
+#if BUTTON_ON_LEVEL == 0
+    cfg.pull_down_en = 0;
+    cfg.pull_up_en = 1;
+#else
+    cfg.pull_down_en = 1;
+    cfg.pull_up_en = 0;
+#endif
+    ESP_ERROR_CHECK(gpio_config(&cfg));
+}
+bool button_read(uint8_t pin) {
+#if BUTTON_ON_LEVEL == 1
+    return gpio_get_level((gpio_num_t)pin);
+#else
+    return !gpio_get_level((gpio_num_t)pin);
+#endif
+}
+uint64_t button_read_all(void) {
+    uint64_t result = 0;
+    for(int i = 0;i<GPIO_NUM_MAX;++i) {
+        uint64_t mask = ((uint64_t)1)<<i;
+        if(mask & BUTTON_MASK) {
+            if(button_read(i)) {
+                result |= mask;
+            }
+        }
+    }
+    return result;
+}
+
 #endif

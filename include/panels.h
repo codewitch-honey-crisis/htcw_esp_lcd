@@ -23,7 +23,9 @@
 #define LCD_MIRROR_Y true
 #define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY true
-#define LCD_DIVISOR 1
+#define LCD_DIVISOR 2
+#define BUTTON_MASK (BUTTON_PIN(0)|BUTTON_PIN(35))
+#define BUTTON_ON_LEVEL 0
 #endif // TTGO_T1
 
 #ifdef ESP_WROVER_KIT

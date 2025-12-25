@@ -10,6 +10,19 @@ extern "C" {
 
 // BEGIN fill ins for defaults (don't mess!)
 
+#define BUTTON_PIN(x) ((uint64_t)((((uint64_t)1)<<((uint64_t)x))))
+#ifdef BUTTON_MASK
+#ifndef BUTTON
+#define BUTTON
+#endif
+#ifndef BUTTON_ON_LEVEL
+#define BUTTON_ON_LEVEL 1
+#endif
+#ifndef BUTTON_OFF_LEVEL
+#define BUTTON_OFF_LEVEL (!BUTTON_ON_LEVEL)
+#endif
+#endif
+
 #ifndef LCD_WIDTH
 #ifdef LCD_SWAP_XY
 #if LCD_SWAP_XY
@@ -181,7 +194,7 @@ size_t lcd_vsync_draw_count(void);
 #ifdef TOUCH_BUS
 /// @brief Initializes the touch panel
 void touch_init(void);
-/// @brief Updated the touch panel date
+/// @brief Updated the touch panel data
 void touch_update(void);
 /// @brief Reads the touch scaled to the LCD (if present, otherwise, same as touch_read_raw)
 /// @param in_out_count The touch count
@@ -195,6 +208,17 @@ void touch_read(size_t* in_out_count,uint16_t* out_x,uint16_t* out_y, uint16_t* 
 /// @param out_y The y array
 /// @param out_strength The strength array
 void touch_read_raw(size_t* in_out_count,uint16_t* out_x,uint16_t* out_y, uint16_t* out_strength);
+#endif
+#ifdef BUTTON
+/// @brief Initializes the buttons
+void button_init(void);
+/// @brief Indicates which buttons are pressed
+/// @param pin The pin to read
+/// @return True if pressed, otherwise false
+bool button_read(uint8_t pin);
+/// @brief Reads all the buttons and returns a mask
+/// @return A mask indicating the pins of the pressed buttons
+uint64_t button_read_all(void);
 #endif
 #ifdef __cplusplus
 }
