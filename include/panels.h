@@ -51,6 +51,8 @@
 #define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR false
 #define LCD_SWAP_XY true
+#define BUTTON_MASK (BUTTON_PIN(0))
+#define BUTTON_ON_LEVEL 0
 #endif // ESP_WROVER_KIT
 
 #ifdef M5STACK_CORE2
