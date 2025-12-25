@@ -3,14 +3,24 @@
 #include "panel.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#if defined(LCD_BUS) && LCD_BIT_DEPTH == 16 && LCD_COLOR_SPACE != LCD_COLOR_GSC
+#define COLOR_BLACK (0)
+#define COLOR_WHITE (0xFFFF)
+#define COLOR_RED (31<<11)
+#define COLOR_GREEN (63<<5)
+#define COLOR_BLUE (31)
+#endif
+
 #ifdef LCD_BUS
-#define CLEAR_DELAY 125
 #ifndef LCD_NO_DMA
 volatile int flushing = 0;
 void lcd_flush_complete(void) {
     flushing = 0;
 }
 #endif
+#endif
+#ifdef COLOR_BLACK
+#define CLEAR_DELAY 125
 void clear_screen(uint16_t color) {
     uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
     for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
@@ -31,13 +41,6 @@ void clear_screen(uint16_t color) {
         while(lcd_vsync_flush_count()) portYIELD();
     }
 }
-#endif
-#if LCD_BIT_DEPTH == 16 && LCD_COLOR_SPACE != LCD_COLOR_GSC
-#define COLOR_BLACK (0)
-#define COLOR_WHITE (0xFFFF)
-#define COLOR_RED (31<<11)
-#define COLOR_GREEN (63<<5)
-#define COLOR_BLUE (31)
 #endif
 void app_main(void)
 {
