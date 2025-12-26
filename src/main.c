@@ -3,8 +3,10 @@
 #include "panel.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#define ICON_IMPLEMENTATION
-#include "icon.h"
+#define ICONS_IMPLEMENTATION
+#include "icons.h"
+
+#define CLEAR_DELAY 1000
 
 #if defined(LCD_BUS) && LCD_BIT_DEPTH == 16 && LCD_COLOR_SPACE != LCD_COLOR_GSC
 #define RGB(r,g,b) ((((uint16_t)r)<<11)|(((uint16_t)g)<<5)|(((uint16_t)b)<<0))
@@ -28,10 +30,18 @@ void lcd_flush_complete(void) {
 #endif
 #endif
 #ifdef COLOR_BLACK
-#define CLEAR_DELAY 125
-static void draw_icon() {
+typedef struct {
+    uint16_t color;
+    const uint8_t* icon;
+} col_entry_t;
+static const col_entry_t colors[] = {
+    {COLOR_RED,icon_red},{COLOR_GREEN,icon_green},{COLOR_BLUE,icon_blue},{COLOR_ORANGE,icon_orange}, {COLOR_CYAN,icon_cyan}
+};
+static const size_t colors_size = sizeof(colors)/sizeof(colors[0]);
+
+static void draw_icon(size_t index) {
     memset(lcd_transfer_buffer(),0,LCD_TRANSFER_SIZE);
-    const uint8_t *p = test_icon;
+    const uint8_t *p = colors[index].icon;
     uint16_t* t = (uint16_t*)lcd_transfer_buffer();
     for(int y = 0;y<32;++y) {
         for(int x = 0; x<128;x+=2) {
@@ -90,11 +100,7 @@ void app_main(void)
 #ifdef COLOR_BLACK 
     TickType_t ts = 0;
     int iter = 0;
-    static const uint16_t colors[] = {
-        COLOR_ORANGE,COLOR_CYAN
-        //COLOR_BLACK,COLOR_RED,COLOR_GREEN,COLOR_BLUE,COLOR_WHITE, COLOR_ORANGE
-    };
-    static const size_t colors_size = sizeof(colors)/sizeof(colors[0]);
+    
 #endif
     while(1) {
         vTaskDelay(5);
@@ -103,7 +109,8 @@ void app_main(void)
             if(xTaskGetTickCount()>=ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
                 ts = xTaskGetTickCount();
                 // draw the screen
-                uint16_t color = colors[(iter++)%colors_size];
+                const size_t index= (iter++)%colors_size;
+                uint16_t color = colors[index].color;
                 uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
 #ifdef LITTLE_ENDIAN                
                 uint16_t px = color;
@@ -131,7 +138,7 @@ void app_main(void)
                 while(flushing) portYIELD(); 
                 flushing = 1;
             #endif
-                draw_icon();
+                draw_icon(index);
                 const uint16_t xoffs = (LCD_WIDTH-128)/2;
                 const uint16_t yoffs = (LCD_HEIGHT-32)/2;
                 lcd_flush(xoffs,yoffs,xoffs+127,yoffs+31,lcd_transfer_buffer());
