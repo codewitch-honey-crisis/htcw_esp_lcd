@@ -7,11 +7,15 @@
 #include "icon.h"
 
 #if defined(LCD_BUS) && LCD_BIT_DEPTH == 16 && LCD_COLOR_SPACE != LCD_COLOR_GSC
-#define COLOR_BLACK (0)
-#define COLOR_WHITE (0xFFFF)
-#define COLOR_RED (31<<11)
-#define COLOR_GREEN (63<<5)
-#define COLOR_BLUE (31)
+#define RGB(r,g,b) ((((uint16_t)r)<<11)|(((uint16_t)g)<<5)|(((uint16_t)b)<<0))
+#define COLOR_BLACK RGB(0,0,0)
+#define COLOR_WHITE RGB(31,63,31)
+#define COLOR_RED RGB(31,0,0)
+#define COLOR_GREEN RGB(0,63,0)
+#define COLOR_BLUE RGB(0,0,31)
+#define COLOR_ORANGE RGB(31,31,0)
+#define COLOR_YELLOW RGB(31,63,0)
+#define COLOR_CYAN RGB(0,63,31)
 #endif
 
 #ifdef LCD_BUS
@@ -87,7 +91,8 @@ void app_main(void)
     TickType_t ts = 0;
     int iter = 0;
     static const uint16_t colors[] = {
-        COLOR_BLACK,COLOR_RED,COLOR_GREEN,COLOR_BLUE,COLOR_WHITE
+        COLOR_ORANGE,COLOR_CYAN
+        //COLOR_BLACK,COLOR_RED,COLOR_GREEN,COLOR_BLUE,COLOR_WHITE, COLOR_ORANGE
     };
     static const size_t colors_size = sizeof(colors)/sizeof(colors[0]);
 #endif
@@ -97,10 +102,16 @@ void app_main(void)
         if(!lcd_vsync_flush_count()) {
             if(xTaskGetTickCount()>=ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
                 ts = xTaskGetTickCount();
+                // draw the screen
                 uint16_t color = colors[(iter++)%colors_size];
                 uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
+#ifdef LITTLE_ENDIAN                
+                uint16_t px = color;
+#else
+                uint16_t px = (color>>8)|((color&0xFF)<<8);
+#endif
                 for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
-                    *buf++=color;
+                    *buf++=px;
                 }
                 int y = 0;
                 while(y<LCD_HEIGHT) {

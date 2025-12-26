@@ -363,6 +363,7 @@ void lcd_init(void) {
     rgb_panel_cfg.data_gpio_nums[14]=LCD_PIN_NUM_D14;
     rgb_panel_cfg.data_gpio_nums[15]=LCD_PIN_NUM_D15;
 #elif !defined(LCD_SWAP_COLOR_BYTES) || LCD_SWAP_COLOR_BYTES == false
+#if LCD_COLOR_SPACE != LCD_COLOR_BGR
     rgb_panel_cfg.data_gpio_nums[0]=LCD_PIN_NUM_D00;
     rgb_panel_cfg.data_gpio_nums[1]=LCD_PIN_NUM_D01;
     rgb_panel_cfg.data_gpio_nums[2]=LCD_PIN_NUM_D02;
@@ -380,14 +381,25 @@ void lcd_init(void) {
     rgb_panel_cfg.data_gpio_nums[14]=LCD_PIN_NUM_D14;
     rgb_panel_cfg.data_gpio_nums[15]=LCD_PIN_NUM_D15;
 #else
-    rgb_panel_cfg.data_gpio_nums[0]=LCD_PIN_NUM_D08;
-    rgb_panel_cfg.data_gpio_nums[1]=LCD_PIN_NUM_D09;
-    rgb_panel_cfg.data_gpio_nums[2]=LCD_PIN_NUM_D10;
-    rgb_panel_cfg.data_gpio_nums[3]=LCD_PIN_NUM_D11;
-    rgb_panel_cfg.data_gpio_nums[4]=LCD_PIN_NUM_D12;
-    rgb_panel_cfg.data_gpio_nums[5]=LCD_PIN_NUM_D13;
-    rgb_panel_cfg.data_gpio_nums[6]=LCD_PIN_NUM_D14;
-    rgb_panel_cfg.data_gpio_nums[7]=LCD_PIN_NUM_D15;
+    rgb_panel_cfg.data_gpio_nums[0]=LCD_PIN_NUM_D11;
+    rgb_panel_cfg.data_gpio_nums[1]=LCD_PIN_NUM_D12;
+    rgb_panel_cfg.data_gpio_nums[2]=LCD_PIN_NUM_D13;
+    rgb_panel_cfg.data_gpio_nums[3]=LCD_PIN_NUM_D14;
+    rgb_panel_cfg.data_gpio_nums[4]=LCD_PIN_NUM_D15;
+    rgb_panel_cfg.data_gpio_nums[5]=LCD_PIN_NUM_D05;
+    rgb_panel_cfg.data_gpio_nums[6]=LCD_PIN_NUM_D06;
+    rgb_panel_cfg.data_gpio_nums[7]=LCD_PIN_NUM_D07;
+    rgb_panel_cfg.data_gpio_nums[8]=LCD_PIN_NUM_D08;
+    rgb_panel_cfg.data_gpio_nums[9]=LCD_PIN_NUM_D09;
+    rgb_panel_cfg.data_gpio_nums[10]=LCD_PIN_NUM_D10;
+    rgb_panel_cfg.data_gpio_nums[11]=LCD_PIN_NUM_D00;
+    rgb_panel_cfg.data_gpio_nums[12]=LCD_PIN_NUM_D01;
+    rgb_panel_cfg.data_gpio_nums[13]=LCD_PIN_NUM_D02;
+    rgb_panel_cfg.data_gpio_nums[14]=LCD_PIN_NUM_D03;
+    rgb_panel_cfg.data_gpio_nums[15]=LCD_PIN_NUM_D04;
+#endif
+#else
+#if LCD_COLOR_SPACE != LCD_COLOR_BGR
     rgb_panel_cfg.data_gpio_nums[8]=LCD_PIN_NUM_D00;
     rgb_panel_cfg.data_gpio_nums[9]=LCD_PIN_NUM_D01;
     rgb_panel_cfg.data_gpio_nums[10]=LCD_PIN_NUM_D02;
@@ -396,6 +408,33 @@ void lcd_init(void) {
     rgb_panel_cfg.data_gpio_nums[13]=LCD_PIN_NUM_D05;
     rgb_panel_cfg.data_gpio_nums[14]=LCD_PIN_NUM_D06;
     rgb_panel_cfg.data_gpio_nums[15]=LCD_PIN_NUM_D07;
+    rgb_panel_cfg.data_gpio_nums[0]=LCD_PIN_NUM_D08;
+    rgb_panel_cfg.data_gpio_nums[1]=LCD_PIN_NUM_D09;
+    rgb_panel_cfg.data_gpio_nums[2]=LCD_PIN_NUM_D10;
+    rgb_panel_cfg.data_gpio_nums[3]=LCD_PIN_NUM_D11;
+    rgb_panel_cfg.data_gpio_nums[4]=LCD_PIN_NUM_D12;
+    rgb_panel_cfg.data_gpio_nums[5]=LCD_PIN_NUM_D13;
+    rgb_panel_cfg.data_gpio_nums[6]=LCD_PIN_NUM_D14;
+    rgb_panel_cfg.data_gpio_nums[7]=LCD_PIN_NUM_D15;
+#else
+    rgb_panel_cfg.data_gpio_nums[8]=LCD_PIN_NUM_D11;
+    rgb_panel_cfg.data_gpio_nums[9]=LCD_PIN_NUM_D12;
+    rgb_panel_cfg.data_gpio_nums[10]=LCD_PIN_NUM_D13;
+    rgb_panel_cfg.data_gpio_nums[11]=LCD_PIN_NUM_D14;
+    rgb_panel_cfg.data_gpio_nums[12]=LCD_PIN_NUM_D15;
+    rgb_panel_cfg.data_gpio_nums[13]=LCD_PIN_NUM_D05;
+    rgb_panel_cfg.data_gpio_nums[14]=LCD_PIN_NUM_D06;
+    rgb_panel_cfg.data_gpio_nums[15]=LCD_PIN_NUM_D07;
+    rgb_panel_cfg.data_gpio_nums[0]=LCD_PIN_NUM_D08;
+    rgb_panel_cfg.data_gpio_nums[1]=LCD_PIN_NUM_D09;
+    rgb_panel_cfg.data_gpio_nums[2]=LCD_PIN_NUM_D10;
+    rgb_panel_cfg.data_gpio_nums[3]=LCD_PIN_NUM_D00;
+    rgb_panel_cfg.data_gpio_nums[4]=LCD_PIN_NUM_D01;
+    rgb_panel_cfg.data_gpio_nums[5]=LCD_PIN_NUM_D02;
+    rgb_panel_cfg.data_gpio_nums[6]=LCD_PIN_NUM_D03;
+    rgb_panel_cfg.data_gpio_nums[7]=LCD_PIN_NUM_D04;
+#endif
+
 #endif
     memset(&rgb_panel_cfg.timings,0,sizeof(esp_lcd_rgb_timing_t));
     rgb_panel_cfg.timings.pclk_hz = LCD_CLOCK_HZ;
@@ -550,7 +589,6 @@ void lcd_init(void) {
 #endif
     ESP_ERROR_CHECK(LCD_PANEL(lcd_io_handle, &panel_config, &lcd_handle));
 #else
-    
     ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&rgb_panel_cfg, &lcd_handle));   
     esp_lcd_rgb_panel_event_callbacks_t rgb_cbs;
     memset(&rgb_cbs,0,sizeof(rgb_cbs));
