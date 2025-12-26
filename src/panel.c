@@ -822,7 +822,7 @@ void touch_read(size_t* in_out_count,uint16_t* out_x,uint16_t* out_y,uint16_t* o
 #endif
 }
 void touch_update(void) {
-    ESP_ERROR_CHECK(esp_lcd_touch_read_data(touch_handle));
+    esp_lcd_touch_read_data(touch_handle);
 }
 #endif
 
