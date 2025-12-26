@@ -98,18 +98,24 @@ void app_main(void)
     button_init();
 #endif
 #ifdef COLOR_BLACK 
-    TickType_t ts = 0;
+    TickType_t screen_ts = 0;
+    TickType_t wdt_ts = xTaskGetTickCount();
     int iter = 0;
     
 #endif
-    const uint16_t xoffs = (LCD_WIDTH-128)/2;
-    const uint16_t yoffs = (LCD_HEIGHT-32)/2;            
+    static const uint16_t xoffs = (LCD_WIDTH-128)/2;
+    static const uint16_t yoffs = (LCD_HEIGHT-32)/2;            
     while(1) {
-        vTaskDelay(5);
+        TickType_t ts = xTaskGetTickCount();
+        // feed the watchdog timer to prevent a reboot
+        if(ts>wdt_ts+pdMS_TO_TICKS(200))  {
+            wdt_ts = ts;
+            vTaskDelay(5);
+        }
 #ifdef COLOR_BLACK
         if(!lcd_vsync_flush_count()) {
-            if(xTaskGetTickCount()>=ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
-                ts = xTaskGetTickCount();
+            if(ts>=screen_ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
+                screen_ts = ts;
                 // draw the screen
                 const size_t index= (iter++)%colors_size;
                 const uint16_t color = colors[index].color;
