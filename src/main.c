@@ -77,7 +77,6 @@ void clear_screen(uint16_t color) {
     flushing = 1;
 #endif
     draw_icon();
-    while(lcd_vsync_flush_count()) portYIELD();
     const uint16_t xoffs = (LCD_WIDTH-128)/2;
     const uint16_t yoffs = (LCD_HEIGHT-32)/2;
     lcd_flush(xoffs,yoffs,xoffs+127,yoffs+31,lcd_transfer_buffer());
@@ -106,9 +105,11 @@ void app_main(void)
     while(1) {
         vTaskDelay(5);
 #ifdef COLOR_BLACK
-        if(xTaskGetTickCount()>=ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
-            ts = xTaskGetTickCount();
-            clear_screen(colors[(iter++)%colors_size]);
+        if(!lcd_vsync_flush_count()) {
+            if(xTaskGetTickCount()>=ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
+                ts = xTaskGetTickCount();
+                clear_screen(colors[(iter++)%colors_size]);
+            }
         }
 #endif
 #ifdef TOUCH_BUS
