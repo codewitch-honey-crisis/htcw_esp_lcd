@@ -3,7 +3,7 @@
 
 // BEGIN devices (add more)
 
-#ifdef TTGO_T1
+#ifdef TTGO_T1 // Works
 #define LCD_SPI_HOST    SPI3_HOST
 #define LCD_PIN_NUM_MOSI 19
 #define LCD_PIN_NUM_CLK 18
@@ -27,7 +27,7 @@
 #define BUTTON_ON_LEVEL 0
 #endif // TTGO_T1
 
-#ifdef ESP_WROVER_KIT
+#ifdef ESP_WROVER_KIT // Works
 #include "esp_lcd_panel_ili9341.h"
 #define LCD_BCKL_ON_LEVEL 0
 #define LCD_SPI_HOST    SPI3_HOST
@@ -53,7 +53,7 @@
 #define BUTTON_ON_LEVEL 0
 #endif // ESP_WROVER_KIT
 
-#ifdef M5STACK_CORE2
+#ifdef M5STACK_CORE2 // Partly works. No touch or power management, and mine is bricked
 #include "esp_lcd_panel_ili9342.h"
 #define LCD_SPI_HOST    SPI3_HOST
 #define LCD_PIN_NUM_MOSI 23
@@ -73,7 +73,7 @@
 #define LCD_SWAP_XY false
 #endif // M5STACK_CORE2
 
-#ifdef M5STACK_FIRE
+#ifdef M5STACK_FIRE // Mine bricked so it's unfinished (no button support) but the display works
 #include "esp_lcd_panel_ili9342.h"
 #define LCD_SPI_HOST    SPI3_HOST
 #define LCD_PIN_NUM_MOSI 23
@@ -95,7 +95,7 @@
 #define LCD_SWAP_XY true
 #endif // M5STACK_FIRE
 
-#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_4
+#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_4 // No touch (I have one but it's in use right now, and inside something so I can't test touch)
 #define LCD_PIN_NUM_CS 1
 #define LCD_PIN_NUM_SCK 12
 #define LCD_PIN_NUM_SDA 11 
@@ -143,7 +143,7 @@
 #endif
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_4
 
-#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_43
+#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_43 // Works
 #include "esp_lcd_touch_gt911.h"
 #define LCD_PIN_NUM_DE 40
 #define LCD_PIN_NUM_VSYNC 41
@@ -205,7 +205,7 @@
 #define TOUCH_DISABLE_CONTROL_PHASE
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_43
 
-#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_7
+#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_7 // 1024x600 only No touch yet
 #define LCD_BCKL_ON_LEVEL 0
 #define LCD_PIN_NUM_DE 40
 #define LCD_PIN_NUM_VSYNC 41
@@ -260,7 +260,7 @@
 #endif
 #define LCD_PSRAM_BUFFER (1024*100*2)
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_7
-#ifdef WAVESHARE_S3_43_DEVKIT
+#ifdef WAVESHARE_S3_43_DEVKIT // works, sometimes reboots on initting the touch controller
 #include "esp_lcd_touch_gt911.h"
 #define LCD_PIN_NUM_DE 5
 #define LCD_PIN_NUM_VSYNC 3
@@ -357,7 +357,7 @@
 #endif
 #endif // WAVESHARE_S3_43_DEVKIT
 
-#ifdef T_DISPLAY_S3
+#ifdef T_DISPLAY_S3 // display, no buttons
 #define LCD_PIN_NUM_CS 6
 #define LCD_PIN_NUM_RST 5
 #define LCD_PIN_NUM_WR 8
@@ -385,7 +385,7 @@
 #define LCD_SWAP_XY true
 #endif // T_DISPLAY_S3
 
-#ifdef S3_T_QT
+#ifdef S3_T_QT // Display, no buttons (mine is lost)
 #define LCD_SPI_HOST    SPI3_HOST
 #define LCD_BCKL_ON_LEVEL 0
 #define LCD_PIN_NUM_MOSI 2
@@ -407,7 +407,7 @@
 #define LCD_SWAP_XY false
 #endif // S3_T_QT
 
-#ifdef M5STACK_S3_ATOM
+#ifdef M5STACK_S3_ATOM // Display, no button support yet (mine is bricked)
 #define LCD_SPI_HOST    SPI3_HOST
 #define LCD_PIN_NUM_MOSI 21
 #define LCD_PIN_NUM_CLK 17
@@ -428,7 +428,7 @@
 #define LCD_SWAP_XY false
 #endif // M5STACK_S3_ATOM
 
-#ifdef T_RGB
+#ifdef T_RGB // Display should work but needs a special lib. I gave this one away due to a number of issues with the way it's built.
 #define LCD_PIN_NUM_DE 45
 #define LCD_PIN_NUM_VSYNC 41
 #define LCD_PIN_NUM_HSYNC 47
@@ -473,7 +473,7 @@
 #endif
 #endif // T_RGB
 
-#ifdef SUNTON_7INCH
+#ifdef SUNTON_7INCH // I've never had a working one. Untested
 #define LCD_PIN_NUM_DE 41
 #define LCD_PIN_NUM_VSYNC 40
 #define LCD_PIN_NUM_HSYNC 39
@@ -519,7 +519,7 @@
 #endif
 #endif // SUNTON_7INCH
 
-#ifdef HELTEC_WIFI_LORA_KIT_V2
+#ifdef HELTEC_WIFI_LORA_KIT_V2 // should work. the display broke on mine though
 #if __has_include("ssd1306_surface_adapter.hpp")
 #include "ssd1306_surface_adapter.hpp"
 #endif
@@ -546,10 +546,12 @@
 #define LCD_Y_ALIGN 8
 #define LCD_VENDOR_CONFIG esp_lcd_panel_ssd1306_config_t vendor_config = {\
     .height = LCD_VRES,\
+#define BUTTON_MASK (BUTTON_PIN(0))
+#define BUTTON_ON_LEVEL 0
 };
 #endif // HELTEC_WIFI_LORA_KIT_V2
 
-#ifdef ESP_USB_OTG
+#ifdef ESP_USB_OTG // display should work, no buttons yet (need to find mine)
 #define LCD_SPI_HOST    SPI2_HOST
 #define LCD_PIN_NUM_MOSI 7
 #define LCD_PIN_NUM_CLK 6
@@ -570,7 +572,7 @@
 #define LCD_SWAP_XY false
 #endif // ESP_USB_OTG
 
-#ifdef WAVESHARE_P4_SMART86BOX
+#ifdef WAVESHARE_P4_SMART86BOX // Works
 #include "esp_lcd_st7703.h"
 #include "esp_lcd_touch_gt911.h"
 //#define LEGACY_I2C
@@ -618,7 +620,7 @@ st7703_vendor_config_t vendor_config = { \
 #define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
 #endif // WAVESHARE_P4_SMART86BOX
 
-#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_35
+#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_35 // Display should work. No touch. Mine died eventually
 #include "esp_lcd_panel_ili9488.h"
 #define LCD_PIN_NUM_CS 37
 #define LCD_PIN_NUM_WR 35
@@ -655,7 +657,7 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_SWAP_COLOR_BYTES true
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_35
 
-#ifdef FREENOVE_S3_DEVKIT
+#ifdef FREENOVE_S3_DEVKIT // Works
 #include "esp_lcd_touch_ft6x36.h"
 #define LCD_SPI_HOST SPI3_HOST
 #define LCD_PIN_NUM_DC 0
@@ -687,7 +689,7 @@ st7703_vendor_config_t vendor_config = { \
 #endif // FREENOVE_S3_DEVKIT
 
 // For testing. No actual integrated display
-#ifdef C6DEVKITC1
+#ifdef C6DEVKITC1 // Works, but is a custom kit
 #if __has_include("ssd1306_surface_adapter.hpp")
 #include "ssd1306_surface_adapter.hpp"
 #endif
