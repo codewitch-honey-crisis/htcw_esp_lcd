@@ -52,7 +52,7 @@ static void draw_icon(size_t index) {
             uint16_t col1g = (high*63)/15;
             uint16_t col2rb = (low*31)/15;
             uint16_t col2g = (low*63)/15;
-#ifndef LCD_LITTLE_ENDIAN
+#ifndef LCD_DATA_ENDIAN_LITTLE
             uint16_t col1raw = (col1rb<<11)|(col1g<<5)|col1rb;
             uint16_t col2raw = (col2rb<<11)|(col2g<<5)|col2rb;
             uint16_t col1 = (col1raw>>8)|((col1raw&0xFF)<<8);
