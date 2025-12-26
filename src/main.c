@@ -25,7 +25,7 @@ void lcd_flush_complete(void) {
 #endif
 #ifdef COLOR_BLACK
 #define CLEAR_DELAY 125
-void draw_icon() {
+static void draw_icon() {
     memset(lcd_transfer_buffer(),0,LCD_TRANSFER_SIZE);
     const uint8_t *p = test_icon;
     uint16_t* t = (uint16_t*)lcd_transfer_buffer();
@@ -53,33 +53,22 @@ void draw_icon() {
     }
 }
 
-void clear_screen(uint16_t color) {
-    uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
-    for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
-        *buf++=color;
-    }
-    int y = 0;
-    while(y<LCD_HEIGHT) {
-        int yend = y+(LCD_HEIGHT/LCD_DIVISOR)-1;
-        if(yend>=LCD_HEIGHT) {
-            yend = LCD_HEIGHT-1;
+static void poll_input() {
+#ifdef TOUCH_BUS
+        touch_update();
+        size_t count = 5;
+        uint16_t x[5],y[5],s[5];
+        touch_read(&count,x,y,s);
+        if(count) {
+            printf("touch: (%d, %d)\n",x[0],y[0]);
         }
-#ifndef LCD_NO_DMA
-        while(flushing) portYIELD(); 
-        flushing = 1;
 #endif
-        lcd_flush(0,y,LCD_WIDTH-1,yend,lcd_transfer_buffer());
-        y= yend+1;
-        while(lcd_vsync_flush_count()) portYIELD();
-    }
-#ifndef LCD_NO_DMA
-    while(flushing) portYIELD(); 
-    flushing = 1;
-#endif
-    draw_icon();
-    const uint16_t xoffs = (LCD_WIDTH-128)/2;
-    const uint16_t yoffs = (LCD_HEIGHT-32)/2;
-    lcd_flush(xoffs,yoffs,xoffs+127,yoffs+31,lcd_transfer_buffer());
+#ifdef BUTTON
+        uint64_t button_mask = button_read_all();
+        if(button_mask>0) {
+            printf("Pressed mask: 0x%llx (%lld)\n",button_mask,button_mask);
+        }
+#endif    
 }
 #endif
 void app_main(void)
@@ -108,24 +97,36 @@ void app_main(void)
         if(!lcd_vsync_flush_count()) {
             if(xTaskGetTickCount()>=ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
                 ts = xTaskGetTickCount();
-                clear_screen(colors[(iter++)%colors_size]);
+                uint16_t color = colors[(iter++)%colors_size];
+                uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
+                for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
+                    *buf++=color;
+                }
+                int y = 0;
+                while(y<LCD_HEIGHT) {
+                    int yend = y+(LCD_HEIGHT/LCD_DIVISOR)-1;
+                    if(yend>=LCD_HEIGHT) {
+                        yend = LCD_HEIGHT-1;
+                    }
+#ifndef LCD_NO_DMA
+                    while(flushing) portYIELD(); 
+                    flushing = 1;
+#endif
+                    lcd_flush(0,y,LCD_WIDTH-1,yend,lcd_transfer_buffer());
+                    y= yend+1;
+                    while(lcd_vsync_flush_count()) { poll_input(); portYIELD(); }
+                }
+            #ifndef LCD_NO_DMA
+                while(flushing) portYIELD(); 
+                flushing = 1;
+            #endif
+                draw_icon();
+                const uint16_t xoffs = (LCD_WIDTH-128)/2;
+                const uint16_t yoffs = (LCD_HEIGHT-32)/2;
+                lcd_flush(xoffs,yoffs,xoffs+127,yoffs+31,lcd_transfer_buffer());
             }
         }
 #endif
-#ifdef TOUCH_BUS
-        touch_update();
-        size_t count = 5;
-        uint16_t x[5],y[5],s[5];
-        touch_read(&count,x,y,s);
-        if(count) {
-            printf("touch: (%d, %d)\n",x[0],y[0]);
-        }
-#endif
-#ifdef BUTTON
-        uint64_t button_mask = button_read_all();
-        if(button_mask>0) {
-            printf("Pressed mask: 0x%llx (%lld)\n",button_mask,button_mask);
-        }
-#endif
+
     }
 }
