@@ -102,6 +102,8 @@ void app_main(void)
     int iter = 0;
     
 #endif
+    const uint16_t xoffs = (LCD_WIDTH-128)/2;
+    const uint16_t yoffs = (LCD_HEIGHT-32)/2;            
     while(1) {
         vTaskDelay(5);
 #ifdef COLOR_BLACK
@@ -110,12 +112,12 @@ void app_main(void)
                 ts = xTaskGetTickCount();
                 // draw the screen
                 const size_t index= (iter++)%colors_size;
-                uint16_t color = colors[index].color;
+                const uint16_t color = colors[index].color;
                 uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
 #ifdef LITTLE_ENDIAN                
-                uint16_t px = color;
+                const uint16_t px = color;
 #else
-                uint16_t px = (color>>8)|((color&0xFF)<<8);
+                const uint16_t px = (color>>8)|((color&0xFF)<<8);
 #endif
                 for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
                     *buf++=px;
@@ -139,8 +141,6 @@ void app_main(void)
                 flushing = 1;
             #endif
                 draw_icon(index);
-                const uint16_t xoffs = (LCD_WIDTH-128)/2;
-                const uint16_t yoffs = (LCD_HEIGHT-32)/2;
                 lcd_flush(xoffs,yoffs,xoffs+127,yoffs+31,lcd_transfer_buffer());
             }
         }
