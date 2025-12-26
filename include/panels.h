@@ -648,7 +648,7 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_PIN_NUM_CLK 21
 #define LCD_HRES 240
 #define LCD_VRES 320
-#define LCD_COLOR_SPACE LCD_COLOR_BGR
+#define LCD_COLOR_SPACE LCD_COLOR_RGB
 #define LCD_CLOCK_HZ (80 * 1000 * 1000)
 #define LCD_MIRROR_X true
 #define LCD_MIRROR_Y false
