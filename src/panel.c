@@ -139,7 +139,12 @@ static void i2c_init() {
         i2c_cfg.sda_io_num = (gpio_num_t)LCD_PIN_NUM_SDA;
         i2c_cfg.scl_io_num = (gpio_num_t)LCD_PIN_NUM_SCL;
         // TODO: make configurable
+#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
         i2c_cfg.flags.enable_internal_pullup = 1;
+#else
+        i2c_cfg.flags.enable_internal_pullup = 0;
+#endif
+
         ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_cfg,&i2c_bus_handle));
 #else
         i2c_config_t i2c_cfg;
@@ -151,11 +156,20 @@ static void i2c_init() {
 #endif
         i2c_cfg.mode = I2C_MODE_MASTER;
         i2c_cfg.sda_io_num = LCD_PIN_NUM_SDA;
+#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
         i2c_cfg.sda_pullup_en = 1;
+#else
+        i2c_cfg.sda_pullup_en = 0;
+#endif
+
         i2c_cfg.scl_io_num = LCD_PIN_NUM_SCL;
+#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
         i2c_cfg.scl_pullup_en = 1;
-        ESP_ERROR_CHECK(i2c_driver_install((i2c_port_t)LCD_I2C_HOST,I2C_MODE_MASTER,0,0,0));
+#else
+        i2c_cfg.scl_pullup_en = 0;
+#endif
         ESP_ERROR_CHECK(i2c_param_config((i2c_port_t)LCD_I2C_HOST,&i2c_cfg));
+        ESP_ERROR_CHECK(i2c_driver_install((i2c_port_t)LCD_I2C_HOST,I2C_MODE_MASTER,0,0,0));
 #endif    
         i2c_initialized[LCD_I2C_HOST] = true;
     }
@@ -174,7 +188,13 @@ static void i2c_init() {
         i2c_cfg.sda_io_num = (gpio_num_t)TOUCH_PIN_NUM_SDA;
         i2c_cfg.scl_io_num = (gpio_num_t)TOUCH_PIN_NUM_SCL;
         // TODO: make configurable
+#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
         i2c_cfg.flags.enable_internal_pullup = 1;
+#else
+        i2c_cfg.flags.enable_internal_pullup = 0;
+#endif
+
+
         ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_cfg,&i2c_bus_handle));
 #else
         i2c_config_t i2c_cfg;
@@ -186,9 +206,18 @@ static void i2c_init() {
 #endif
         i2c_cfg.mode = I2C_MODE_MASTER;
         i2c_cfg.sda_io_num = TOUCH_PIN_NUM_SDA;
+#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
         i2c_cfg.sda_pullup_en = 1;
+#else
+        i2c_cfg.sda_pullup_en = 0;
+#endif
         i2c_cfg.scl_io_num = TOUCH_PIN_NUM_SCL;
+#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
         i2c_cfg.scl_pullup_en = 1;
+#else
+        i2c_cfg.scl_pullup_en = 0;
+#endif
+
         ESP_ERROR_CHECK(i2c_driver_install((i2c_port_t)TOUCH_I2C_HOST,I2C_MODE_MASTER,0,0,0));
         ESP_ERROR_CHECK(i2c_param_config((i2c_port_t)TOUCH_I2C_HOST,&i2c_cfg));
 #endif    
@@ -712,11 +741,22 @@ void touch_init(void) {
 #else
     touch_cfg.int_gpio_num = (gpio_num_t)-1;
 #endif
+#ifdef TOUCH_INT_ON_LEVEL
+    touch_cfg.levels.reset = TOUCH_INT_ON_LEVEL;
+#else 
+    touch_cfg.levels.reset = 1;
+#endif
 #ifdef TOUCH_PIN_NUM_RST
     touch_cfg.rst_gpio_num = (gpio_num_t)TOUCH_PIN_NUM_RST;
 #else
     touch_cfg.rst_gpio_num = (gpio_num_t)-1;
 #endif
+#ifdef TOUCH_RST_ON_LEVEL
+    touch_cfg.levels.reset = TOUCH_RST_ON_LEVEL;
+#else
+    touch_cfg.levels.reset = 1;
+#endif
+
     touch_cfg.x_max = TOUCH_HRES;
     touch_cfg.y_max = TOUCH_VRES;
 #ifdef TOUCH_SWAP_XY
@@ -738,7 +778,7 @@ void touch_init(void) {
     esp_lcd_panel_io_i2c_config_t touch_i2c_cfg;
     touch_i2c_cfg.control_phase_bytes = TOUCH_CONTROL_PHASE_BYTES;
     touch_i2c_cfg.dc_bit_offset = TOUCH_DC_BIT_OFFSET;
-    touch_i2c_cfg.dev_addr = TOUCH_ADDRESS;
+    touch_i2c_cfg.dev_addr = TOUCH_I2C_ADDR;
 #ifdef TOUCH_DISABLE_CONTROL_PHASE
     touch_i2c_cfg.flags.disable_control_phase = true;
 #endif
@@ -770,11 +810,11 @@ void touch_read_raw(size_t* in_out_count,uint16_t* out_x,uint16_t* out_y,uint16_
 }
 void touch_read(size_t* in_out_count,uint16_t* out_x,uint16_t* out_y,uint16_t* out_strength) {
     touch_read_raw(in_out_count,out_x,out_y,out_strength);
-#ifdef LCD_BUS
+#if defined(LCD_BUS) && (TOUCH_WIDTH!=LCD_WIDTH||TOUCH_HEIGHT!=LCD_HEIGHT)
     for(size_t i = 0;i<*in_out_count;++i) {
         // the panel may have a different res than the screen
-        out_x[i]=out_x[i]*LCD_WIDTH/TOUCH_WIDTH;
-        out_y[i]=out_y[i]*LCD_HEIGHT/TOUCH_HEIGHT;
+        out_x[i]=(out_x[i]*LCD_WIDTH)/TOUCH_WIDTH;
+        out_y[i]=(out_y[i]*LCD_HEIGHT)/TOUCH_HEIGHT;
     }
 #endif
 }

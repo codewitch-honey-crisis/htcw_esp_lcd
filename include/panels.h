@@ -192,14 +192,17 @@
 #define TOUCH_PIN_NUM_SDA 17
 
 #define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
-#define TOUCH_ADDRESS ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
-#define TOUCH_CMD_BITS 16
-#define TOUCH_PARAM_BITS 0
-#define TOUCH_DISABLE_CONTROL_PHASE
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
 #define TOUCH_CLOCK_HZ (400*1000)
 #define TOUCH_PIN_NUM_RST 38
 #define TOUCH_HRES 480
 #define TOUCH_VRES 272
+#define TOUCH_RST_ON_LEVEL 0
+#define TOUCH_INT_ON_LEVEL 0
+#define TOUCH_DC_BIT_OFFSET 0
+#define TOUCH_CMD_BITS 16
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_43
 
 #ifdef MATOUCH_ESP_DISPLAY_PARALLEL_7
@@ -308,14 +311,16 @@
 #define TOUCH_PIN_NUM_SDA           8
 
 #define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
-#define TOUCH_ADDRESS ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
-#define TOUCH_CMD_BITS 16
-#define TOUCH_PARAM_BITS 0
-#define TOUCH_DISABLE_CONTROL_PHASE
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
 #define TOUCH_CLOCK_HZ (400*1000)
 #define TOUCH_HRES LCD_HRES
 #define TOUCH_VRES LCD_VRES
-
+#define TOUCH_RST_ON_LEVEL 0
+#define TOUCH_INT_ON_LEVEL 0
+#define TOUCH_DC_BIT_OFFSET 0
+#define TOUCH_CMD_BITS 16
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
 #ifndef LEGACY_I2C
 #define TOUCH_RESET \
     i2c_master_bus_handle_t bus; \
@@ -518,8 +523,8 @@
 #endif // SUNTON_7INCH
 
 #ifdef HELTEC_WIFI_LORA_KIT_V2
-#if __has_include(<ssd1306_surface_adapter.hpp>)
-#include <ssd1306_surface_adapter.hpp>
+#if __has_include("ssd1306_surface_adapter.hpp")
+#include "ssd1306_surface_adapter.hpp"
 #endif
 #define LCD_I2C_HOST    0
 #define LCD_I2C_ADDR 0x3C
@@ -570,6 +575,8 @@
 
 #ifdef WAVESHARE_P4_SMART86BOX
 #include "esp_lcd_st7703.h"
+#include "esp_lcd_touch_gt911.h"
+//#define LEGACY_I2C
 #define LCD_TRANSFER_IN_SPIRAM
 #define LCD_BCKL_ON_LEVEL 0
 #define LCD_HRES 720
@@ -600,6 +607,18 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_PIN_NUM_BCKL 26
 #define LCD_PHY_PWR_LDO_CHAN
 #define LCD_CLOCK_HZ (46 * 1000 * 1000)
+#define TOUCH_I2C_HOST I2C_NUM_0
+#define TOUCH_PIN_NUM_SDA 7
+#define TOUCH_PIN_NUM_SCL 8
+#define TOUCH_CLOCK_HZ (100*1000)
+#define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
+#define TOUCH_RST_ON_LEVEL 0
+#define TOUCH_INT_ON_LEVEL 0
+#define TOUCH_DC_BIT_OFFSET 0
+#define TOUCH_CMD_BITS 16
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
 #endif // WAVESHARE_P4_SMART86BOX
 
 #ifdef MATOUCH_ESP_DISPLAY_PARALLEL_35
@@ -661,7 +680,7 @@ st7703_vendor_config_t vendor_config = { \
 #define TOUCH_PIN_NUM_SDA 2
 
 #define TOUCH_PANEL esp_lcd_touch_new_i2c_ft6x36
-#define TOUCH_ADDRESS ESP_LCD_TOUCH_IO_I2C_FT6x36_ADDRESS
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_FT6x36_ADDRESS
 #define TOUCH_CMD_BITS 8
 #define TOUCH_PARAM_BITS 0
 #define TOUCH_DISABLE_CONTROL_PHASE
