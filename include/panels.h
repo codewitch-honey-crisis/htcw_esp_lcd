@@ -651,7 +651,7 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_CLOCK_HZ (80 * 1000 * 1000)
 #define LCD_MIRROR_X true
-#define LCD_MIRROR_Y true
+#define LCD_MIRROR_Y false
 #define LCD_PANEL esp_lcd_new_panel_st7789
 #define LCD_INVERT_COLOR false
 #define LCD_SWAP_XY true
