@@ -119,7 +119,7 @@ void app_main(void)
 #else
                 const uint16_t px = (color>>8)|((color&0xFF)<<8);
 #endif
-                for(int i = 0;i<LCD_TRANSFER_SIZE/2;++i) {
+                for(int i = 0;i<LCD_TRANSFER_SIZE/sizeof(uint16_t);++i) {
                     *buf++=px;
                 }
                 int y = 0;
@@ -145,6 +145,6 @@ void app_main(void)
             }
         }
 #endif
-
+        poll_input();
     }
 }
