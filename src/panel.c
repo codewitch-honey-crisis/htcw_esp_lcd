@@ -799,7 +799,11 @@ void touch_init(void) {
     ESP_ERROR_CHECK(TOUCH_PANEL(touch_io_handle,&touch_cfg,&touch_handle));
 }
 void touch_read_raw(size_t* in_out_count,uint16_t* out_x,uint16_t* out_y,uint16_t* out_strength) {
-    ESP_ERROR_CHECK(esp_lcd_touch_read_data(touch_handle));
+    if(ESP_OK!=esp_lcd_touch_read_data(touch_handle)) {
+        ESP_LOGE(TAG,"touch read error");
+        *in_out_count = 0;
+        return;
+    }
     uint8_t count=*in_out_count;
     if(!esp_lcd_touch_get_coordinates(touch_handle,out_x,out_y,out_strength,&count,count)) {
         *in_out_count = 0;
