@@ -641,7 +641,6 @@ st7703_vendor_config_t vendor_config = { \
 #ifdef FREENOVE_S3_DEVKIT
 #include "esp_lcd_touch_ft6x36.h"
 #define LCD_SPI_HOST SPI3_HOST
-#define LCD_NO_DMA
 #define LCD_PIN_NUM_DC 0
 #define LCD_PIN_NUM_CS 47
 #define LCD_PIN_NUM_MOSI 20
