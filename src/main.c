@@ -95,19 +95,21 @@ void app_main(void)
 #ifdef BUTTON
     button_init();
 #endif
+#ifdef COLOR_BLACK 
+    TickType_t ts = 0;
+    int iter = 0;
+    static const uint16_t colors[] = {
+        COLOR_BLACK,COLOR_RED,COLOR_GREEN,COLOR_BLUE,COLOR_WHITE
+    };
+    static const size_t colors_size = sizeof(colors)/sizeof(colors[0]);
+#endif
     while(1) {
         vTaskDelay(5);
 #ifdef COLOR_BLACK
-        clear_screen(COLOR_BLACK);
-        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
-        clear_screen(COLOR_RED);
-        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
-        clear_screen(COLOR_GREEN);
-        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
-        clear_screen(COLOR_BLUE);
-        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
-        clear_screen(COLOR_WHITE);
-        vTaskDelay(pdMS_TO_TICKS(CLEAR_DELAY));
+        if(xTaskGetTickCount()>=ts+pdMS_TO_TICKS(CLEAR_DELAY)) {
+            ts = xTaskGetTickCount();
+            clear_screen(colors[(iter++)%colors_size]);
+        }
 #endif
 #ifdef TOUCH_BUS
         touch_update();
