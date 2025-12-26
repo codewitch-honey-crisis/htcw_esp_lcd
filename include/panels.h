@@ -294,13 +294,10 @@
 #define LCD_CLK_IDLE_HIGH 0
 #define LCD_DE_IDLE_HIGH 0
 #define LCD_BIT_DEPTH 16
-
-//#define LCD_PANEL esp_lcd_new_panel_st7701
 #define LCD_HRES 800
 #define LCD_VRES 480
-#define LCD_SWAP_HRES_VRES_TIMING
-#define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_SWAP_COLOR_BYTES false
+#define LCD_COLOR_SPACE LCD_COLOR_RGB
+#define LCD_SWAP_COLOR_BYTES true
 #ifdef CONFIG_SPIRAM_MODE_QUAD
     #define LCD_CLOCK_HZ (6 * 1000 * 1000)
 #else
@@ -324,7 +321,7 @@
 #ifndef LEGACY_I2C
 #define TOUCH_RESET \
     i2c_master_bus_handle_t bus; \
-    ESP_ERROR_CHECK(i2c_master_get_bus_handle((i2c_port_num_t)0,&bus)); \
+    ESP_ERROR_CHECK(i2c_master_get_bus_handle((i2c_port_num_t)TOUCH_I2C_HOST,&bus)); \
     i2c_master_dev_handle_t i2c=NULL; \
     i2c_device_config_t dev_cfg; \
     memset(&dev_cfg,0,sizeof(dev_cfg)); \
@@ -349,13 +346,13 @@
 #else
 #define TOUCH_RESET \
     uint8_t write_buf = 0x01;\
-    ESP_ERROR_CHECK(i2c_master_write_to_device((i2c_port_t)0,0x24,&write_buf,1,portMAX_DELAY));\
+    ESP_ERROR_CHECK(i2c_master_write_to_device((i2c_port_t)TOUCH_I2C_HOST,0x24,&write_buf,1,portMAX_DELAY));\
     write_buf = 0x2c;\
-    ESP_ERROR_CHECK(i2c_master_write_to_device((i2c_port_t)0,0x38,&write_buf,1,portMAX_DELAY));\
+    ESP_ERROR_CHECK(i2c_master_write_to_device((i2c_port_t)TOUCH_I2C_HOST,0x38,&write_buf,1,portMAX_DELAY));\
     esp_rom_delay_us(100 * 1000);\
     gpio_set_level((gpio_num_t)4, 0);\
     write_buf = 0x2E;\
-    ESP_ERROR_CHECK(i2c_master_write_to_device((i2c_port_t)0,0x38,&write_buf,1,portMAX_DELAY));\
+    ESP_ERROR_CHECK(i2c_master_write_to_device((i2c_port_t)TOUCH_I2C_HOST,0x38,&write_buf,1,portMAX_DELAY));\
     esp_rom_delay_us(200 * 1000)
 #endif
 #endif // WAVESHARE_S3_43_DEVKIT

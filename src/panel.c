@@ -719,19 +719,18 @@ void touch_init(void) {
         ESP_LOGW(TAG,"lcd_touch_init() was already called");
         return; // already initialized
     }
-#ifdef TOUCH_RESET
-    TOUCH_RESET;
-#endif
-    esp_lcd_touch_config_t touch_cfg;
-    memset(&touch_cfg,0,sizeof(touch_cfg));
-    
 #if TOUCH_BUS == PANEL_BUS_SPI
     spi_init();
 #endif    
 #if TOUCH_BUS == PANEL_BUS_I2C
     i2c_init();
 #endif
-#ifdef TOUCH_DRIVER_DATA
+#ifdef TOUCH_RESET
+    TOUCH_RESET;
+#endif
+    esp_lcd_touch_config_t touch_cfg;
+    memset(&touch_cfg,0,sizeof(touch_cfg));
+    #ifdef TOUCH_DRIVER_DATA
     TOUCH_DRIVER_DATA;
     touch_cfg.driver_data = &driver_data;
 #endif
