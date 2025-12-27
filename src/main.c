@@ -194,7 +194,7 @@ void app_main(void)
                     bits += (8-LCD_BIT_DEPTH);
                 }
                 for(int i = 0;i<LCD_TRANSFER_SIZE;++i) {
-                    *buf++=0xFF;
+                    *buf++=c;
                 }
 #endif
                 int y = 0;

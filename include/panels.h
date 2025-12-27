@@ -510,9 +510,6 @@
 #endif // SUNTON_7INCH
 
 #ifdef HELTEC_WIFI_LORA_KIT_V2 // should work. the display broke on mine though
-#if __has_include("ssd1306_surface_adapter.hpp")
-#include "ssd1306_surface_adapter.hpp"
-#endif
 #define LCD_I2C_HOST    0
 #define LCD_I2C_ADDR 0x3C
 #define LCD_CONTROL_PHASE_BYTES 1
@@ -530,12 +527,25 @@
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X true
 #define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR false
+#define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY false
 #define LCD_FRAME_ADAPTER ssd1306_surface_adapter
 #define LCD_Y_ALIGN 8
 #define LCD_VENDOR_CONFIG esp_lcd_panel_ssd1306_config_t vendor_config = {\
     .height = LCD_VRES,\
+#define LCD_TRANSLATE static uint8_t ssd1306_buffer[(LCD_HRES*LCD_VRES*LCD_BIT_DEPTH+7)/8];\
+     for (int y = y1; y <= y2; y++) {\
+        for (int x = x1; x <= x2; x++) {\
+            bool chroma_color = (((uint8_t*)bitmap)[(LCD_HRES >> 3) * y  + (x >> 3)] & 1 << (7 - x % 8));\
+            uint8_t *buf = ssd1306_buffer + LCD_HRES * (y >> 3) + (x);\
+            if (chroma_color) {\
+                (*buf) &= ~(1 << (y % 8));\
+            } else {\
+                (*buf) |= (1 << (y % 8));\
+            }\
+        }\
+    }\
+    bitmap = ssd1306_buffer;
 #define BUTTON_MASK (BUTTON_PIN(0))
 #define BUTTON_ON_LEVEL 0
 };
@@ -698,7 +708,7 @@ st7703_vendor_config_t vendor_config = { \
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X true
 #define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR false
+#define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY false
 #define LCD_DIVISOR 1
 #define LCD_Y_ALIGN 8
