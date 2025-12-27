@@ -112,8 +112,8 @@ static void draw_icon(size_t index) {
 #if LCD_BIT_DEPTH == 8
             const uint8_t low = data & 0x0F;
             const uint8_t high = (data & 0xF0)>>4;
-            *t++=high<<4;
-            *t++=low<<4;
+            *t++=high*16;
+            *t++=low*16;
 #endif
 #endif
 
@@ -152,7 +152,7 @@ void app_main(void)
 #ifdef BUTTON
     button_init();
 #endif
-#ifdef COLOR_BLACK 
+#ifdef COLOR_BLACK // we have a suported color model
     TickType_t screen_ts = 0;
     TickType_t wdt_ts = xTaskGetTickCount();
     int iter = 0;
