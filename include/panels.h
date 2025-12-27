@@ -53,7 +53,7 @@
 #define BUTTON_ON_LEVEL 0
 #endif // ESP_WROVER_KIT
 
-#ifdef M5STACK_CORE2 // Partly works. No touch or power management, and mine is bricked
+#ifdef M5STACK_CORE2 // Partly works. No touch yet
 #include "esp_lcd_panel_ili9342.h"
 #include "esp_lcd_touch_ft6x36.h"
 #include "m5_stack_core2_power.h"
