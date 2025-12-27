@@ -244,6 +244,9 @@ void lcd_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, void *bitmap)
         ESP_LOGE(TAG,"lcd_flush() was invoked but lcd_init() was never called.");
         return;
     }
+#ifdef LCD_TRANSLATE
+    LCD_TRANSLATE;
+#endif
     // pass the draw buffer to the driver
     ESP_ERROR_CHECK(esp_lcd_panel_draw_bitmap(lcd_handle, x1, y1, x2 + 1, y2 + 1, bitmap));
 #if LCD_PIN_NUM_VSYNC
@@ -542,6 +545,8 @@ void lcd_init(void) {
     lcd_i2c_cfg.scl_speed_hz = 0;
 #endif
 #ifndef LEGACY_I2C
+    i2c_master_bus_handle_t i2c_bus_handle;
+    ESP_ERROR_CHECK(i2c_master_get_bus_handle((i2c_port_num_t)LCD_I2C_HOST,&i2c_bus_handle));
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c_v2((i2c_master_bus_handle_t)i2c_bus_handle, &lcd_i2c_cfg, &lcd_io_handle));
 #else
     ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c_v1((uint32_t)LCD_I2C_HOST, &lcd_i2c_cfg, &lcd_io_handle));

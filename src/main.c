@@ -3,21 +3,32 @@
 #include "panel.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#define ICONS_IMPLEMENTATION
-#include "icons.h"
 
 #define CLEAR_DELAY 1000
 
 #if defined(LCD_BUS) && LCD_BIT_DEPTH == 16 && LCD_COLOR_SPACE != LCD_COLOR_GSC
-#define RGB(r,g,b) ((((uint16_t)r)<<11)|(((uint16_t)g)<<5)|(((uint16_t)b)<<0))
-#define COLOR_BLACK RGB(0,0,0)
-#define COLOR_WHITE RGB(31,63,31)
-#define COLOR_RED RGB(31,0,0)
-#define COLOR_GREEN RGB(0,63,0)
-#define COLOR_BLUE RGB(0,0,31)
-#define COLOR_ORANGE RGB(31,31,0)
-#define COLOR_YELLOW RGB(31,63,0)
-#define COLOR_CYAN RGB(0,63,31)
+#define ICONS_RGB_IMPLEMENTATION
+#include "icons_rgb.h"
+#define RGB_OR_BGR_16
+#define PX_TYPE uint16_t
+#define COLOR_RGB(r,g,b) ((((uint16_t)r)<<11)|(((uint16_t)g)<<5)|(((uint16_t)b)<<0))
+#define COLOR_BLACK COLOR_RGB(0,0,0)
+#define COLOR_WHITE COLOR_RGB(31,63,31)
+#define COLOR_RED COLOR_RGB(31,0,0)
+#define COLOR_GREEN COLOR_RGB(0,63,0)
+#define COLOR_BLUE COLOR_RGB(0,0,31)
+#define COLOR_ORANGE COLOR_RGB(31,31,0)
+#define COLOR_YELLOW COLOR_RGB(31,63,0)
+#define COLOR_CYAN COLOR_RGB(0,63,31)
+#elif defined(LCD_BUS) && LCD_COLOR_SPACE == LCD_COLOR_GSC
+#define ICONS_GSC_IMPLEMENTATION
+#include "icons_gsc.h"
+#define GSC
+#define PX_TYPE uint8_t
+#define COLOR_GSC(x) ((uint8_t)((uint8_t)x)>>(8-LCD_BIT_DEPTH))
+#define COLOR_BLACK COLOR_GSC(0)
+#define COLOR_GRAY COLOR_GSC(127)
+#define COLOR_WHITE COLOR_GSC(255)
 #endif
 
 #ifdef LCD_BUS
@@ -31,23 +42,51 @@ void lcd_flush_complete(void) {
 #endif
 #ifdef COLOR_BLACK
 typedef struct {
-    uint16_t color;
+    PX_TYPE color;
     const uint8_t* icon;
 } col_entry_t;
 static const col_entry_t colors[] = {
+#ifdef RGB_OR_BGR
     {COLOR_RED,icon_red},{COLOR_GREEN,icon_green},{COLOR_BLUE,icon_blue},{COLOR_ORANGE,icon_orange}, {COLOR_CYAN,icon_cyan}
+#endif
+#ifdef GSC
+    {COLOR_BLACK,icon_black},{COLOR_GRAY,icon_gray},{COLOR_WHITE,icon_white}
+#endif
 };
 static const size_t colors_size = sizeof(colors)/sizeof(colors[0]);
 
 static void draw_icon(size_t index) {
     memset(lcd_transfer_buffer(),0,LCD_TRANSFER_SIZE);
     const uint8_t *p = colors[index].icon;
-    uint16_t* t = (uint16_t*)lcd_transfer_buffer();
+    PX_TYPE* t = (PX_TYPE*)lcd_transfer_buffer();
+#if defined(GSC) && LCD_BIT_DEPTH == 1
+    uint8_t accum = 0;
+    int bits = 0;
+    static const size_t icon_bytes = 128*32/2;
+    for(int i = 0;i<icon_bytes;++i) {
+        const uint8_t data = *p++;
+        const uint8_t low = data & 0x0F;
+        const uint8_t high = (data & 0xF0)>>4;
+        accum<<=1;
+        accum|= (high>7);
+        ++bits;
+        accum<<=1;
+        accum|= (low>7);
+        ++bits;
+        if(bits==8) {
+            bits=0;
+            *t++=accum;
+            accum = 0;
+        }
+    }
+#endif
+#if LCD_BIT_DEPTH >= 4
     for(int y = 0;y<32;++y) {
         for(int x = 0; x<128;x+=2) {
-            uint8_t data = *p++;
-            uint8_t low = data & 0x0F;
-            uint8_t high = (data & 0xF0)>>4;
+            const uint8_t data = *p++;
+#ifdef RGB_OR_BGR
+            const uint8_t low = data & 0x0F;
+            const uint8_t high = (data & 0xF0)>>4;
             uint16_t col1rb = (high*31)/15;
             uint16_t col1g = (high*63)/15;
             uint16_t col2rb = (low*31)/15;
@@ -63,8 +102,24 @@ static void draw_icon(size_t index) {
 #endif
             *t++=col1;
             *t++=col2;
+#endif
+#ifdef GSC
+#if LCD_BIT_DEPTH == 4
+            const uint8_t low = data & 0x0F;
+            const uint8_t high = (data & 0xF0)>>4;
+            *t++=(low | (high<<4));
+#endif
+#if LCD_BIT_DEPTH == 8
+            const uint8_t low = data & 0x0F;
+            const uint8_t high = (data & 0xF0)>>4;
+            *t++=high<<4;
+            *t++=low<<4;
+#endif
+#endif
+
         }
     }
+#endif
 }
 
 static void poll_input() {
@@ -118,16 +173,30 @@ void app_main(void)
                 screen_ts = ts;
                 // draw the screen
                 const size_t index= (iter++)%colors_size;
-                const uint16_t color = colors[index].color;
-                uint16_t* buf = (uint16_t*)lcd_transfer_buffer();
-#ifdef LITTLE_ENDIAN                
-                const uint16_t px = color;
+                const PX_TYPE color = colors[index].color;
+                PX_TYPE* buf = (PX_TYPE*)lcd_transfer_buffer();
+#if defined(RGB_OR_BGR) && LCD_BIT_DEPTH == 16
+#ifdef LITTLE_ENDIAN   
+                const PX_TYPE px = color;
 #else
-                const uint16_t px = (color>>8)|((color&0xFF)<<8);
+                const PX_TYPE px = (color>>8)|((color&0xFF)<<8);
 #endif
+                color = px;
                 for(int i = 0;i<LCD_TRANSFER_SIZE/sizeof(uint16_t);++i) {
-                    *buf++=px;
+                    *buf++=color;
                 }
+#endif
+#if defined(GSC)
+                uint8_t c = color >> (8-LCD_BIT_DEPTH);
+                int bits = (8-LCD_BIT_DEPTH);
+                while(bits<8) {
+                    c |= ((color >> (8-LCD_BIT_DEPTH)) << bits);
+                    bits += (8-LCD_BIT_DEPTH);
+                }
+                for(int i = 0;i<LCD_TRANSFER_SIZE;++i) {
+                    *buf++=0xFF;
+                }
+#endif
                 int y = 0;
                 while(y<LCD_HEIGHT) {
                     int yend = y+(LCD_HEIGHT/LCD_DIVISOR)-1;

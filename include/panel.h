@@ -46,9 +46,6 @@ extern "C" {
 #ifndef LCD_Y_ALIGN
 #define LCD_Y_ALIGN 1
 #endif
-#ifndef LCD_FRAME_ADAPTER
-#define LCD_FRAME_ADAPTER gfx::bitmap<gfx::rgb_pixel<LCD_BIT_DEPTH>>
-#endif
 #ifndef LCD_DC_BIT_OFFSET
 #define LCD_DC_BIT_OFFSET 0
 #endif
