@@ -32,13 +32,10 @@
 #endif
 
 #ifdef LCD_BUS
-
-#ifndef LCD_NO_DMA
 volatile int flushing = 0;
 void lcd_flush_complete(void) {
     flushing = 0;
 }
-#endif
 #endif
 #ifdef COLOR_BLACK
 typedef struct {
@@ -203,10 +200,8 @@ void app_main(void)
                     if(yend>=LCD_HEIGHT) {
                         yend = LCD_HEIGHT-1;
                     }
-#ifndef LCD_NO_DMA
                     while(flushing) portYIELD(); 
                     flushing = 1;
-#endif
                     lcd_flush(0,y,LCD_WIDTH-1,yend,lcd_transfer_buffer());
                     y= yend+1;
                     while(lcd_vsync_flush_count()) { poll_input(); portYIELD(); }
