@@ -27,7 +27,62 @@
 #define BUTTON_ON_LEVEL 0
 #endif // TTGO_T1
 
-#ifdef ESP_WROVER_KIT // Works
+#ifdef T_DISPLAY_S3 // untested, mine bricked
+#define LCD_PIN_NUM_CS 6
+#define LCD_PIN_NUM_RST 5
+#define LCD_PIN_NUM_WR 8
+#define LCD_PIN_NUM_RD 9
+#define LCD_PIN_NUM_RS 7
+#define LCD_PIN_NUM_D00 39
+#define LCD_PIN_NUM_D01 40
+#define LCD_PIN_NUM_D02 41
+#define LCD_PIN_NUM_D03 42
+#define LCD_PIN_NUM_D04 45
+#define LCD_PIN_NUM_D05 46
+#define LCD_PIN_NUM_D06 47
+#define LCD_PIN_NUM_D07 48
+#define LCD_PIN_NUM_BCKL 38
+#define LCD_PANEL esp_lcd_new_panel_st7789
+#define LCD_HRES 170
+#define LCD_VRES 320
+#define LCD_COLOR_SPACE LCD_COLOR_RGB
+#define LCD_CLOCK_HZ (6528 * 1000)
+#define LCD_GAP_X 0
+#define LCD_GAP_Y 35
+#define LCD_MIRROR_X false
+#define LCD_MIRROR_Y true
+#define LCD_INVERT_COLOR true
+#define LCD_SWAP_XY true
+#define BUTTON_MASK (BUTTON_PIN(0)|BUTTON_PIN(14))
+#define BUTTON_ON_LEVEL 0
+#endif // T_DISPLAY_S3
+
+#ifdef T_QT_PRO // Untested (mine is lost)
+#define LCD_SPI_HOST    SPI3_HOST
+#define LCD_BCKL_ON_LEVEL 0
+#define LCD_PIN_NUM_MOSI 2
+#define LCD_PIN_NUM_CLK 3
+#define LCD_PIN_NUM_CS 5
+#define LCD_PIN_NUM_DC 6
+#define LCD_PIN_NUM_RST 1
+#define LCD_PIN_NUM_BCKL 10
+#define LCD_PANEL esp_lcd_new_panel_st7789
+#define LCD_HRES 128
+#define LCD_VRES 128
+#define LCD_COLOR_SPACE LCD_COLOR_BGR
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_GAP_X 2
+#define LCD_GAP_Y 1
+#define LCD_MIRROR_X true
+#define LCD_MIRROR_Y true
+#define LCD_INVERT_COLOR true
+#define LCD_SWAP_XY false
+#define BUTTON_MASK (BUTTON_PIN(0)|BUTTON_PIN(47))
+#define BUTTON_ON_LEVEL 0
+#endif // T_QT_PRO
+
+#ifdef ESP_WROVER_KIT // Should work (Mine has a short)
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_panel_ili9341
 #include "esp_lcd_panel_ili9341.h"
 #define LCD_BCKL_ON_LEVEL 0
 #define LCD_SPI_HOST    SPI3_HOST
@@ -53,7 +108,33 @@
 #define BUTTON_ON_LEVEL 0
 #endif // ESP_WROVER_KIT
 
+#ifdef ESP_USB_OTG // Works
+#define LCD_SPI_HOST    SPI2_HOST
+#define LCD_PIN_NUM_MOSI 7
+#define LCD_PIN_NUM_CLK 6
+#define LCD_PIN_NUM_CS 5
+#define LCD_PIN_NUM_DC 4
+#define LCD_PIN_NUM_RST 8
+#define LCD_PIN_NUM_BCKL 9
+#define LCD_PANEL esp_lcd_new_panel_st7789
+#define LCD_HRES 240
+#define LCD_VRES 240
+#define LCD_COLOR_SPACE LCD_COLOR_RGB
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_GAP_X 0
+#define LCD_GAP_Y 0
+#define LCD_MIRROR_X false
+#define LCD_MIRROR_Y false
+#define LCD_INVERT_COLOR true
+#define LCD_SWAP_XY false
+#define BUTTON_MASK (BUTTON_PIN(0)|BUTTON_PIN(10)|BUTTON_PIN(11)|BUTTON_PIN(14))
+#define BUTTON_ON_LEVEL 0
+#endif // ESP_USB_OTG
+
 #ifdef M5STACK_CORE2 // Works
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_touch_ft6x36
+//            codewitch-honey-crisis/htcw_esp_lcd_panel_ili9342
+//            codewitch-honey-crisis/htcw_m5_stack_core2_power
 #include "esp_lcd_panel_ili9342.h"
 #include "esp_lcd_touch_ft6x36.h"
 #include "m5_stack_core2_power.h"
@@ -93,7 +174,8 @@
 #define POWER_INIT m5_stack_core2_power_init(false)
 #endif // M5STACK_CORE2
 
-#ifdef M5STACK_FIRE // Mine bricked so it's unfinished (no button support) but the display works
+#ifdef M5STACK_FIRE // Mine bricked so it's untested
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_panel_ili9342
 #include "esp_lcd_panel_ili9342.h"
 #define LCD_SPI_HOST    SPI3_HOST
 #define LCD_PIN_NUM_MOSI 23
@@ -113,9 +195,86 @@
 #define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY false
+#define BUTTON_MASK (BUTTON_PIN(39)|BUTTON_PIN(38)|BUTTON_PIN(37))
+#define BUTTON_ON_LEVEL 0
 #endif // M5STACK_FIRE
 
-#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_4 // No touch (I have one but it's in use right now, and inside something so I can't test touch)
+#ifdef M5STACK_S3_ATOM // Untested (mine is bricked)
+#define LCD_SPI_HOST    SPI3_HOST
+#define LCD_PIN_NUM_MOSI 21
+#define LCD_PIN_NUM_CLK 17
+#define LCD_PIN_NUM_CS 15
+#define LCD_PIN_NUM_DC 33
+#define LCD_PIN_NUM_RST 34
+#define LCD_PIN_NUM_BCKL 16
+#define LCD_PANEL esp_lcd_new_panel_st7789
+#define LCD_HRES 128
+#define LCD_VRES 128
+#define LCD_COLOR_SPACE LCD_COLOR_BGR
+#define LCD_CLOCK_HZ (40 * 1000 * 1000)
+#define LCD_GAP_X 2
+#define LCD_GAP_Y 1
+#define LCD_MIRROR_X true
+#define LCD_MIRROR_Y true
+#define LCD_INVERT_COLOR true
+#define LCD_SWAP_XY false
+#define BUTTON_MASK (BUTTON_PIN(41))
+#define BUTTON_ON_LEVEL 0
+#endif // M5STACK_S3_ATOM
+
+#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_35 // Untested. Mine died eventually
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_panel_ili9488
+//      codewitch-honey-crisis/htcw_esp_lcd_touch_ft6x36
+#include "esp_lcd_panel_ili9488.h"
+#include "esp_lcd_touch_ft6x36.h"
+#define LCD_PIN_NUM_CS 37
+#define LCD_PIN_NUM_WR 35
+#define LCD_PIN_NUM_RD 48
+#define LCD_PIN_NUM_RS 36
+#define LCD_PIN_NUM_D00 47
+#define LCD_PIN_NUM_D01 21
+#define LCD_PIN_NUM_D02 14
+#define LCD_PIN_NUM_D03 13
+#define LCD_PIN_NUM_D04 12
+#define LCD_PIN_NUM_D05 11
+#define LCD_PIN_NUM_D06 10
+#define LCD_PIN_NUM_D07 9
+#define LCD_PIN_NUM_D08 3
+#define LCD_PIN_NUM_D09 8
+#define LCD_PIN_NUM_D10 16
+#define LCD_PIN_NUM_D11 15
+#define LCD_PIN_NUM_D12 7
+#define LCD_PIN_NUM_D13 6
+#define LCD_PIN_NUM_D14 5
+#define LCD_PIN_NUM_D15 4
+#define LCD_PIN_NUM_BCKL 45
+#define LCD_PANEL esp_lcd_new_panel_ili9488
+#define LCD_HRES 320
+#define LCD_VRES 480
+#define LCD_COLOR_SPACE LCD_COLOR_BGR
+#define LCD_CLOCK_HZ (20 * 1000 * 1000)
+#define LCD_GAP_X 0
+#define LCD_GAP_Y 0
+#define LCD_MIRROR_X true
+#define LCD_MIRROR_Y true
+#define LCD_INVERT_COLOR false
+#define LCD_SWAP_XY true
+#define LCD_SWAP_COLOR_BYTES true
+#define TOUCH_I2C_HOST I2C_NUM_0
+#define TOUCH_PIN_NUM_SCL 39
+#define TOUCH_PIN_NUM_SDA 38
+#define TOUCH_PANEL esp_lcd_touch_new_i2c_ft6x36
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_FT6x36_ADDRESS
+#define TOUCH_CMD_BITS 8
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
+#define TOUCH_CLOCK_HZ (200*1000)
+#define TOUCH_PIN_NUM_RST -1
+#endif // MATOUCH_ESP_DISPLAY_PARALLEL_35
+
+#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_4 // Untested (I have one but it's in use right now, and inside something so I can't test touch)
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_touch_gt911
+#include "esp_lcd_touch_gt911.h"
 #define LCD_PIN_NUM_CS 1
 #define LCD_PIN_NUM_SCK 12
 #define LCD_PIN_NUM_SDA 11 
@@ -161,9 +320,24 @@
 #else
     #define LCD_CLOCK_HZ (10 * 1000 * 1000)
 #endif
+#define TOUCH_I2C_HOST I2C_NUM_0
+#define TOUCH_PIN_NUM_SDA 17
+#define TOUCH_PIN_NUM_SCL 18
+#define TOUCH_PIN_NUM_INT -1
+#define TOUCH_PIN_NUM_RST 38
+#define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
+#define TOUCH_CLOCK_HZ (400*1000)
+#define TOUCH_RST_ON_LEVEL 0
+#define TOUCH_INT_ON_LEVEL 0
+#define TOUCH_DC_BIT_OFFSET 0
+#define TOUCH_CMD_BITS 16
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_4
 
 #ifdef MATOUCH_ESP_DISPLAY_PARALLEL_43 // Works
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_touch_gt911
 #include "esp_lcd_touch_gt911.h"
 #define LCD_PIN_NUM_DE 40
 #define LCD_PIN_NUM_VSYNC 41
@@ -210,7 +384,6 @@
 #define TOUCH_I2C_HOST I2C_NUM_0
 #define TOUCH_PIN_NUM_SCL 18
 #define TOUCH_PIN_NUM_SDA 17
-
 #define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
 #define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
 #define TOUCH_CLOCK_HZ (400*1000)
@@ -225,7 +398,8 @@
 #define TOUCH_DISABLE_CONTROL_PHASE
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_43
 
-#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_7 // 1024x600 only No touch yet
+#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_7 // untested 1024x600 only (I gave mine away)
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_touch_gt911
 #define LCD_BCKL_ON_LEVEL 0
 #define LCD_PIN_NUM_DE 40
 #define LCD_PIN_NUM_VSYNC 41
@@ -261,6 +435,7 @@
 #define LCD_BIT_DEPTH 16
 #define LCD_HRES 1024
 #define LCD_VRES 600
+#define LCD_TRANSFER_IN_SPIRAM
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_SWAP_COLOR_BYTES false
 #ifdef CONFIG_SPIRAM_MODE_QUAD
@@ -268,8 +443,23 @@
 #else
     #define LCD_CLOCK_HZ (10 * 1000 * 1000)
 #endif
-#define LCD_PSRAM_BUFFER (1024*100*2)
+#define TOUCH_I2C_HOST I2C_NUM_0
+#define TOUCH_PIN_NUM_SCL 18
+#define TOUCH_PIN_NUM_SDA 17
+#define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
+#define TOUCH_CLOCK_HZ (400*1000)
+#define TOUCH_PIN_NUM_RST 38
+#define TOUCH_HRES 480
+#define TOUCH_VRES 272
+#define TOUCH_RST_ON_LEVEL 0
+#define TOUCH_INT_ON_LEVEL 0
+#define TOUCH_DC_BIT_OFFSET 0
+#define TOUCH_CMD_BITS 16
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
 #endif // MATOUCH_ESP_DISPLAY_PARALLEL_7
+
 #ifdef WAVESHARE_S3_43_DEVKIT // works, sometimes reboots on initting the touch controller
 #include "esp_lcd_touch_gt911.h"
 #define LCD_PIN_NUM_DE 5
@@ -367,235 +557,11 @@
 #endif
 #endif // WAVESHARE_S3_43_DEVKIT
 
-#ifdef T_DISPLAY_S3 // display, no buttons
-#define LCD_PIN_NUM_CS 6
-#define LCD_PIN_NUM_RST 5
-#define LCD_PIN_NUM_WR 8
-#define LCD_PIN_NUM_RD 9
-#define LCD_PIN_NUM_RS 7
-#define LCD_PIN_NUM_D00 39
-#define LCD_PIN_NUM_D01 40
-#define LCD_PIN_NUM_D02 41
-#define LCD_PIN_NUM_D03 42
-#define LCD_PIN_NUM_D04 45
-#define LCD_PIN_NUM_D05 46
-#define LCD_PIN_NUM_D06 47
-#define LCD_PIN_NUM_D07 48
-#define LCD_PIN_NUM_BCKL 38
-#define LCD_PANEL esp_lcd_new_panel_st7789
-#define LCD_HRES 170
-#define LCD_VRES 320
-#define LCD_COLOR_SPACE LCD_COLOR_RGB
-#define LCD_CLOCK_HZ (6528 * 1000)
-#define LCD_GAP_X 0
-#define LCD_GAP_Y 35
-#define LCD_MIRROR_X false
-#define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY true
-#endif // T_DISPLAY_S3
-
-#ifdef S3_T_QT // Display, no buttons (mine is lost)
-#define LCD_SPI_HOST    SPI3_HOST
-#define LCD_BCKL_ON_LEVEL 0
-#define LCD_PIN_NUM_MOSI 2
-#define LCD_PIN_NUM_CLK 3
-#define LCD_PIN_NUM_CS 5
-#define LCD_PIN_NUM_DC 6
-#define LCD_PIN_NUM_RST 1
-#define LCD_PIN_NUM_BCKL 10
-#define LCD_PANEL esp_lcd_new_panel_st7789
-#define LCD_HRES 128
-#define LCD_VRES 128
-#define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_CLOCK_HZ (40 * 1000 * 1000)
-#define LCD_GAP_X 2
-#define LCD_GAP_Y 1
-#define LCD_MIRROR_X true
-#define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY false
-#endif // S3_T_QT
-
-#ifdef M5STACK_S3_ATOM // Display, no button support yet (mine is bricked)
-#define LCD_SPI_HOST    SPI3_HOST
-#define LCD_PIN_NUM_MOSI 21
-#define LCD_PIN_NUM_CLK 17
-#define LCD_PIN_NUM_CS 15
-#define LCD_PIN_NUM_DC 33
-#define LCD_PIN_NUM_RST 34
-#define LCD_PIN_NUM_BCKL 16
-#define LCD_PANEL esp_lcd_new_panel_st7789
-#define LCD_HRES 128
-#define LCD_VRES 128
-#define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_CLOCK_HZ (40 * 1000 * 1000)
-#define LCD_GAP_X 2
-#define LCD_GAP_Y 1
-#define LCD_MIRROR_X true
-#define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY false
-#endif // M5STACK_S3_ATOM
-
-#ifdef T_RGB // Display should work but needs a special lib. I gave this one away due to a number of issues with the way it's built.
-#define LCD_PIN_NUM_DE 45
-#define LCD_PIN_NUM_VSYNC 41
-#define LCD_PIN_NUM_HSYNC 47
-#define LCD_PIN_NUM_CLK 42
-#define LCD_PIN_NUM_D00 21
-#define LCD_PIN_NUM_D01 18
-#define LCD_PIN_NUM_D02 17
-#define LCD_PIN_NUM_D03 16
-#define LCD_PIN_NUM_D04 15
-#define LCD_PIN_NUM_D05 14
-#define LCD_PIN_NUM_D06 13
-#define LCD_PIN_NUM_D07 12
-#define LCD_PIN_NUM_D08 11
-#define LCD_PIN_NUM_D09 10
-#define LCD_PIN_NUM_D10 9
-#define LCD_PIN_NUM_D11 7
-#define LCD_PIN_NUM_D12 6
-#define LCD_PIN_NUM_D13 5
-#define LCD_PIN_NUM_D14 3
-#define LCD_PIN_NUM_D15 2
-#define LCD_PIN_NUM_BCKL 46
-#define LCD_HSYNC_POLARITY 0
-#define LCD_HSYNC_FRONT_PORCH 50
-#define LCD_HSYNC_PULSE_WIDTH 1
-#define LCD_HSYNC_BACK_PORCH 30
-#define LCD_VSYNC_POLARITY 0
-#define LCD_VSYNC_FRONT_PORCH 20
-#define LCD_VSYNC_PULSE_WIDTH 1
-#define LCD_VSYNC_BACK_PORCH 30
-#define LCD_CLK_IDLE_HIGH 0
-#define LCD_DE_IDLE_HIGH 0
-#define LCD_BIT_DEPTH 16
-#define LCD_PANEL esp_lcd_new_panel_st7701_t_rgb
-#define LCD_HRES 480
-#define LCD_VRES 480
-#define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_SWAP_COLOR_BYTES false
-#ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
-#else
-    #define LCD_CLOCK_HZ (8 * 1000 * 1000)
-#endif
-#endif // T_RGB
-
-#ifdef SUNTON_7INCH // I've never had a working one. Untested
-#define LCD_PIN_NUM_DE 41
-#define LCD_PIN_NUM_VSYNC 40
-#define LCD_PIN_NUM_HSYNC 39
-#define LCD_PIN_NUM_CLK 42
-#define LCD_PIN_NUM_D00 14
-#define LCD_PIN_NUM_D01 21
-#define LCD_PIN_NUM_D02 47
-#define LCD_PIN_NUM_D03 48
-#define LCD_PIN_NUM_D04 45
-#define LCD_PIN_NUM_D05 9
-#define LCD_PIN_NUM_D06 46
-#define LCD_PIN_NUM_D07 3
-#define LCD_PIN_NUM_D08 8
-#define LCD_PIN_NUM_D09 16
-#define LCD_PIN_NUM_D10 1
-#define LCD_PIN_NUM_D11 15
-#define LCD_PIN_NUM_D12 7
-#define LCD_PIN_NUM_D13 6
-#define LCD_PIN_NUM_D14 5
-#define LCD_PIN_NUM_D15 4
-#define LCD_PIN_NUM_BCKL 2
-#define LCD_HSYNC_POLARITY 0
-#define LCD_HSYNC_FRONT_PORCH 210
-#define LCD_HSYNC_PULSE_WIDTH 30
-#define LCD_HSYNC_BACK_PORCH 16
-#define LCD_VSYNC_POLARITY 0
-#define LCD_VSYNC_FRONT_PORCH 22
-#define LCD_VSYNC_PULSE_WIDTH 13
-#define LCD_VSYNC_BACK_PORCH 10
-#define LCD_CLK_ACTIVE_NEG 1
-#define LCD_CLK_IDLE_HIGH 0
-#define LCD_DE_IDLE_HIGH 1
-#define LCD_BIT_DEPTH 16
-//#define LCD_PANEL esp_lcd_new_panel_st7701
-#define LCD_HRES 800
-#define LCD_VRES 480
-#define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_SWAP_COLOR_BYTES false
-#ifdef CONFIG_SPIRAM_MODE_QUAD
-    #define LCD_CLOCK_HZ (6 * 1000 * 1000)
-#else
-    #define LCD_CLOCK_HZ (16 * 1000 * 1000)
-#endif
-#endif // SUNTON_7INCH
-
-#ifdef HELTEC_WIFI_LORA_KIT_V2 // should work. the display broke on mine though
-#define LCD_I2C_HOST    0
-#define LCD_I2C_ADDR 0x3C
-#define LCD_CONTROL_PHASE_BYTES 1
-#define LCD_DC_BIT_OFFSET 6
-#define LCD_BIT_DEPTH 1
-#define LCD_PIN_NUM_SCL 15
-#define LCD_PIN_NUM_SDA 4
-#define LCD_PIN_NUM_RST 16
-#define LCD_PANEL esp_lcd_new_panel_ssd1306
-#define LCD_HRES 128
-#define LCD_VRES 64
-#define LCD_COLOR_SPACE LCD_COLOR_GSC
-#define LCD_CLOCK_HZ (400 * 1000)
-#define LCD_GAP_X 0
-#define LCD_GAP_Y 0
-#define LCD_MIRROR_X true
-#define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY false
-#define LCD_FRAME_ADAPTER ssd1306_surface_adapter
-#define LCD_Y_ALIGN 8
-#define LCD_VENDOR_CONFIG esp_lcd_panel_ssd1306_config_t vendor_config = {\
-    .height = LCD_VRES,\
-#define LCD_TRANSLATE static uint8_t ssd1306_buffer[(LCD_HRES*LCD_VRES*LCD_BIT_DEPTH+7)/8];\
-     for (int y = y1; y <= y2; y++) {\
-        for (int x = x1; x <= x2; x++) {\
-            bool chroma_color = (((uint8_t*)bitmap)[(LCD_HRES >> 3) * y  + (x >> 3)] & 1 << (7 - x % 8));\
-            uint8_t *buf = ssd1306_buffer + LCD_HRES * (y >> 3) + (x);\
-            if (chroma_color) {\
-                (*buf) &= ~(1 << (y % 8));\
-            } else {\
-                (*buf) |= (1 << (y % 8));\
-            }\
-        }\
-    }\
-    bitmap = ssd1306_buffer;
-#define BUTTON_MASK (BUTTON_PIN(0))
-#define BUTTON_ON_LEVEL 0
-};
-#endif // HELTEC_WIFI_LORA_KIT_V2
-
-#ifdef ESP_USB_OTG // display should work, no buttons yet (need to find mine)
-#define LCD_SPI_HOST    SPI2_HOST
-#define LCD_PIN_NUM_MOSI 7
-#define LCD_PIN_NUM_CLK 6
-#define LCD_PIN_NUM_CS 5
-#define LCD_PIN_NUM_DC 4
-#define LCD_PIN_NUM_RST 8
-#define LCD_PIN_NUM_BCKL 9
-#define LCD_PANEL esp_lcd_new_panel_st7789
-#define LCD_HRES 240
-#define LCD_VRES 240
-#define LCD_COLOR_SPACE LCD_COLOR_RGB
-#define LCD_CLOCK_HZ (40 * 1000 * 1000)
-#define LCD_GAP_X 0
-#define LCD_GAP_Y 0
-#define LCD_MIRROR_X false
-#define LCD_MIRROR_Y false
-#define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY false
-#endif // ESP_USB_OTG
-
 #ifdef WAVESHARE_P4_SMART86BOX // Works
+// lib_deps = codewitch-honey-crisis/htcw_esp_lcd_st7703
+//    codewitch-honey-crisis/htcw_esp_lcd_touch_gt911
 #include "esp_lcd_st7703.h"
 #include "esp_lcd_touch_gt911.h"
-//#define LEGACY_I2C
 #define LCD_TRANSFER_IN_SPIRAM
 #define LCD_BCKL_ON_LEVEL 0
 #define LCD_HRES 720
@@ -640,42 +606,47 @@ st7703_vendor_config_t vendor_config = { \
 #define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
 #endif // WAVESHARE_P4_SMART86BOX
 
-#ifdef MATOUCH_ESP_DISPLAY_PARALLEL_35 // Display should work. No touch. Mine died eventually
-#include "esp_lcd_panel_ili9488.h"
-#define LCD_PIN_NUM_CS 37
-#define LCD_PIN_NUM_WR 35
-#define LCD_PIN_NUM_RD 48
-#define LCD_PIN_NUM_RS 36
-#define LCD_PIN_NUM_D00 47
-#define LCD_PIN_NUM_D01 21
-#define LCD_PIN_NUM_D02 14
-#define LCD_PIN_NUM_D03 13
-#define LCD_PIN_NUM_D04 12
-#define LCD_PIN_NUM_D05 11
-#define LCD_PIN_NUM_D06 10
-#define LCD_PIN_NUM_D07 9
-#define LCD_PIN_NUM_D08 3
-#define LCD_PIN_NUM_D09 8
-#define LCD_PIN_NUM_D10 16
-#define LCD_PIN_NUM_D11 15
-#define LCD_PIN_NUM_D12 7
-#define LCD_PIN_NUM_D13 6
-#define LCD_PIN_NUM_D14 5
-#define LCD_PIN_NUM_D15 4
-#define LCD_PIN_NUM_BCKL 45
-#define LCD_PANEL esp_lcd_new_panel_ili9488
-#define LCD_HRES 320
-#define LCD_VRES 480
-#define LCD_COLOR_SPACE LCD_COLOR_BGR
-#define LCD_CLOCK_HZ (20 * 1000 * 1000)
+#ifdef HELTEC_WIFI_LORA_KIT_V2 // should work. the display broke on mine though
+#define LCD_I2C_HOST    0
+#define LCD_I2C_ADDR 0x3C
+#define LCD_CONTROL_PHASE_BYTES 1
+#define LCD_DC_BIT_OFFSET 6
+#define LCD_BIT_DEPTH 1
+#define LCD_PIN_NUM_SCL 15
+#define LCD_PIN_NUM_SDA 4
+#define LCD_PIN_NUM_RST 16
+#define LCD_PANEL esp_lcd_new_panel_ssd1306
+#define LCD_HRES 128
+#define LCD_VRES 64
+#define LCD_COLOR_SPACE LCD_COLOR_GSC
+#define LCD_CLOCK_HZ (400 * 1000)
 #define LCD_GAP_X 0
 #define LCD_GAP_Y 0
 #define LCD_MIRROR_X true
 #define LCD_MIRROR_Y true
-#define LCD_INVERT_COLOR false
-#define LCD_SWAP_XY true
-#define LCD_SWAP_COLOR_BYTES true
-#endif // MATOUCH_ESP_DISPLAY_PARALLEL_35
+#define LCD_INVERT_COLOR true
+#define LCD_SWAP_XY false
+#define LCD_FRAME_ADAPTER ssd1306_surface_adapter
+#define LCD_Y_ALIGN 8
+#define LCD_VENDOR_CONFIG esp_lcd_panel_ssd1306_config_t vendor_config = {\
+    .height = LCD_VRES,\
+#define LCD_TRANSLATE static uint8_t ssd1306_buffer[(LCD_HRES*LCD_VRES*LCD_BIT_DEPTH+7)/8];\
+     for (int y = y1; y <= y2; y++) {\
+        for (int x = x1; x <= x2; x++) {\
+            bool chroma_color = (((uint8_t*)bitmap)[(LCD_HRES >> 3) * y  + (x >> 3)] & 1 << (7 - x % 8));\
+            uint8_t *buf = ssd1306_buffer + LCD_HRES * (y >> 3) + (x);\
+            if (chroma_color) {\
+                (*buf) &= ~(1 << (y % 8));\
+            } else {\
+                (*buf) |= (1 << (y % 8));\
+            }\
+        }\
+    }\
+    bitmap = ssd1306_buffer;
+#define BUTTON_MASK (BUTTON_PIN(0))
+#define BUTTON_ON_LEVEL 0
+};
+#endif // HELTEC_WIFI_LORA_KIT_V2
 
 #ifdef FREENOVE_S3_DEVKIT // Works
 #include "esp_lcd_touch_ft6x36.h"
