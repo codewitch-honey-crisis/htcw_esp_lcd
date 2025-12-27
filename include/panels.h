@@ -53,7 +53,7 @@
 #define BUTTON_ON_LEVEL 0
 #endif // ESP_WROVER_KIT
 
-#ifdef M5STACK_CORE2 // Partly works. No touch yet
+#ifdef M5STACK_CORE2 // Works
 #include "esp_lcd_panel_ili9342.h"
 #include "esp_lcd_touch_ft6x36.h"
 #include "m5_stack_core2_power.h"
@@ -73,10 +73,22 @@
 #define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY false
+#define TOUCH_I2C_HOST I2C_NUM_0
+#define TOUCH_PIN_NUM_SDA 21
+#define TOUCH_PIN_NUM_SCL 22
+#define TOUCH_PANEL esp_lcd_touch_new_i2c_ft6x36
+#define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_FT6x36_ADDRESS
+#define TOUCH_CMD_BITS 8
+#define TOUCH_PARAM_BITS 0
+#define TOUCH_DISABLE_CONTROL_PHASE
+#define TOUCH_CLOCK_HZ (200*1000)
+#define TOUCH_PIN_NUM_RST -1
+#define TOUCH_VRES 280
+#define TOUCH_BOTTOM_OVERHANG 40
 #define POWER_I2C_HOST I2C_NUM_0
 #define POWER_PIN_NUM_SDA 21
 #define POWER_PIN_NUM_SCL 22
-#define POWER_CLOCK_HZ (400*1000)
+#define POWER_CLOCK_HZ (200*1000) // must be the same as others for LEGACY_I2C to work
 #define POWER_I2C_PULLUP
 #define POWER_INIT m5_stack_core2_power_init(false)
 #endif // M5STACK_CORE2
@@ -91,8 +103,8 @@
 #define LCD_PIN_NUM_RST 33
 #define LCD_PIN_NUM_BCKL 32
 #define LCD_PANEL esp_lcd_new_panel_ili9342
-#define LCD_HRES 240
-#define LCD_VRES 320
+#define LCD_HRES 320
+#define LCD_VRES 240
 #define LCD_COLOR_SPACE LCD_COLOR_BGR
 #define LCD_CLOCK_HZ (40 * 1000 * 1000)
 #define LCD_GAP_X 0
@@ -100,7 +112,7 @@
 #define LCD_MIRROR_X false
 #define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR true
-#define LCD_SWAP_XY true
+#define LCD_SWAP_XY false
 #endif // M5STACK_FIRE
 
 #ifdef MATOUCH_ESP_DISPLAY_PARALLEL_4 // No touch (I have one but it's in use right now, and inside something so I can't test touch)

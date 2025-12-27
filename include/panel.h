@@ -133,7 +133,19 @@ extern "C" {
 #define TOUCH_SWAP_XY LCD_SWAP_XY
 #endif
 #endif
+#ifndef TOUCH_TOP_OVERHANG
+#define TOUCH_TOP_OVERHANG 0
+#endif
+#ifndef TOUCH_BOTTOM_OVERHANG
+#define TOUCH_BOTTOM_OVERHANG 0
+#endif
 
+#ifndef TOUCH_LEFT_OVERHANG
+#define TOUCH_LEFT_OVERHANG 0
+#endif
+#ifndef TOUCH_RIGHT_OVERHANG
+#define TOUCH_RIGHT_OVERHANG 0
+#endif
 #ifndef TOUCH_WIDTH
 #ifdef TOUCH_SWAP_XY
 #if TOUCH_SWAP_XY
