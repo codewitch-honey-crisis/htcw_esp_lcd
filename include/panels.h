@@ -728,8 +728,6 @@ st7703_vendor_config_t vendor_config = { \
         }\
     }\
     bitmap = ssd1306_buffer;
-#define BUTTON_MASK (BUTTON_PIN(0))
-#define BUTTON_ON_LEVEL 0
 #endif // C6DEVKITC1
 
 // END devices
