@@ -55,6 +55,8 @@
 
 #ifdef M5STACK_CORE2 // Partly works. No touch or power management, and mine is bricked
 #include "esp_lcd_panel_ili9342.h"
+#include "esp_lcd_touch_ft6x36.h"
+#include "m5_stack_core2_power.h"
 #define LCD_SPI_HOST    SPI3_HOST
 #define LCD_PIN_NUM_MOSI 23
 #define LCD_PIN_NUM_CLK 18
@@ -71,6 +73,12 @@
 #define LCD_MIRROR_Y false
 #define LCD_INVERT_COLOR true
 #define LCD_SWAP_XY false
+#define POWER_I2C_HOST I2C_NUM_0
+#define POWER_PIN_NUM_SDA 21
+#define POWER_PIN_NUM_SCL 22
+#define POWER_CLOCK_HZ (400*1000)
+#define POWER_I2C_PULLUP
+#define POWER_INIT m5_stack_core2_power_init(false)
 #endif // M5STACK_CORE2
 
 #ifdef M5STACK_FIRE // Mine bricked so it's unfinished (no button support) but the display works
@@ -296,7 +304,7 @@
 #define TOUCH_I2C_HOST I2C_NUM_0
 #define TOUCH_PIN_NUM_SCL           9
 #define TOUCH_PIN_NUM_SDA           8
-
+#define TOUCH_I2C_PULLUP
 #define TOUCH_PANEL esp_lcd_touch_new_i2c_gt911
 #define TOUCH_I2C_ADDR ESP_LCD_TOUCH_IO_I2C_GT911_ADDRESS
 #define TOUCH_CLOCK_HZ (400*1000)

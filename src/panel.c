@@ -5,10 +5,10 @@
 #include "esp_lcd_panel_io.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_vendor.h"
-#if LCD_BUS == PANEL_BUS_SPI || TOUCH_BUS == PANEL_BUS_SPI
+#if LCD_BUS == PANEL_BUS_SPI || TOUCH_BUS == PANEL_BUS_SPI || POWER_BUS == PANEL_BUS_SPI
 #include "driver/spi_master.h"
 #endif
-#if LCD_BUS == PANEL_BUS_I2C || TOUCH_BUS == PANEL_BUS_I2C
+#if LCD_BUS == PANEL_BUS_I2C || TOUCH_BUS == PANEL_BUS_I2C || POWER_BUS == PANEL_BUS_I2C
 #ifndef LEGACY_I2C
 #include "driver/i2c_master.h"
 #else
@@ -44,7 +44,7 @@ static void* draw_buffer2 = NULL;
 static volatile bool vsync_count = 0;
 #endif
 
-#if (defined(LCD_BUS) && LCD_BUS == PANEL_BUS_SPI) || (defined(TOUCH_BUS) && TOUCH_BUS == PANEL_BUS_SPI)
+#if (defined(LCD_BUS) && LCD_BUS == PANEL_BUS_SPI) || (defined(TOUCH_BUS) && TOUCH_BUS == PANEL_BUS_SPI) || (defined(POWER_BUS) && POWER_BUS == PANEL_BUS_SPI)
 static bool spi_initialized[4] = { false };
 static void spi_init() {
 #ifdef LCD_BUS
@@ -115,11 +115,45 @@ static void spi_init() {
     }
 #endif
 #endif
+
+#ifdef POWER_BUS
+#if POWER_BUS == PANEL_BUS_SPI
+    if(!spi_initialized[POWER_SPI_HOST]) {    
+        spi_bus_config_t spi_cfg;
+        memset(&spi_cfg,0,sizeof(spi_cfg));
+        uint32_t spi_sz = POWER_TRANSFER_SIZE+8;
+        if(spi_sz>32*1024) {
+            ESP_LOGW(TAG,"SPI transfer size is limited to 32KB, but power device is set to more. Decrease POWER_TRANSFER_SIZE");
+            spi_sz = 32*1024;
+        }
+        spi_cfg.max_transfer_sz = spi_sz;
+        spi_cfg.data0_io_num = -1;
+        spi_cfg.data1_io_num = -1;
+        spi_cfg.data2_io_num = -1;
+        spi_cfg.data3_io_num = -1;
+        spi_cfg.data4_io_num = -1;
+        spi_cfg.data5_io_num = -1;
+        spi_cfg.data6_io_num = -1;
+        spi_cfg.data7_io_num = -1;
+        spi_cfg.quadhd_io_num = -1;
+        spi_cfg.quadwp_io_num = -1;
+#ifdef POWER_PIN_NUM_MOSI
+        spi_cfg.mosi_io_num = POWER_PIN_NUM_MOSI;
+#endif
+        spi_cfg.sclk_io_num = POWER_PIN_NUM_CLK;
+#ifdef POWER_PIN_NUM_MISO
+        spi_cfg.miso_io_num = POWER_PIN_NUM_MISO;
+#endif
+        ESP_ERROR_CHECK(spi_bus_initialize((spi_host_device_t)POWER_SPI_HOST,&spi_cfg,SPI_DMA_CH_AUTO));
+        spi_initialized[POWER_SPI_HOST] = true;
+    }
+#endif
+#endif
 }
 #endif
 #endif
 
-#if (defined(LCD_BUS) && LCD_BUS == PANEL_BUS_I2C) || (defined(TOUCH_BUS) && TOUCH_BUS == PANEL_BUS_I2C)
+#if (defined(LCD_BUS) && LCD_BUS == PANEL_BUS_I2C) || (defined(TOUCH_BUS) && TOUCH_BUS == PANEL_BUS_I2C) || (defined(POWER_BUS) && POWER_BUS == PANEL_BUS_I2C)
 static bool i2c_initialized[2] = { false };
 static void i2c_init() {
 #ifdef LCD_BUS
@@ -139,7 +173,7 @@ static void i2c_init() {
         i2c_cfg.sda_io_num = (gpio_num_t)LCD_PIN_NUM_SDA;
         i2c_cfg.scl_io_num = (gpio_num_t)LCD_PIN_NUM_SCL;
         // TODO: make configurable
-#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
+#if defined(LCD_I2C_PULLUP)
         i2c_cfg.flags.enable_internal_pullup = 1;
 #else
         i2c_cfg.flags.enable_internal_pullup = 0;
@@ -156,14 +190,14 @@ static void i2c_init() {
 #endif
         i2c_cfg.mode = I2C_MODE_MASTER;
         i2c_cfg.sda_io_num = LCD_PIN_NUM_SDA;
-#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
+#if defined(LCD_I2C_PULLUP)
         i2c_cfg.sda_pullup_en = 1;
 #else
         i2c_cfg.sda_pullup_en = 0;
 #endif
 
         i2c_cfg.scl_io_num = LCD_PIN_NUM_SCL;
-#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
+#if defined(LCD_I2C_PULLUP)
         i2c_cfg.scl_pullup_en = 1;
 #else
         i2c_cfg.scl_pullup_en = 0;
@@ -188,7 +222,7 @@ static void i2c_init() {
         i2c_cfg.sda_io_num = (gpio_num_t)TOUCH_PIN_NUM_SDA;
         i2c_cfg.scl_io_num = (gpio_num_t)TOUCH_PIN_NUM_SCL;
         // TODO: make configurable
-#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
+#if defined(TOUCH_I2C_PULLUP)
         i2c_cfg.flags.enable_internal_pullup = 1;
 #else
         i2c_cfg.flags.enable_internal_pullup = 0;
@@ -206,13 +240,13 @@ static void i2c_init() {
 #endif
         i2c_cfg.mode = I2C_MODE_MASTER;
         i2c_cfg.sda_io_num = TOUCH_PIN_NUM_SDA;
-#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
+#if defined(TOUCH_I2C_PULLUP)
         i2c_cfg.sda_pullup_en = 1;
 #else
         i2c_cfg.sda_pullup_en = 0;
 #endif
         i2c_cfg.scl_io_num = TOUCH_PIN_NUM_SCL;
-#if defined(LCD_I2C_PULLUP) || defined(TOUCH_I2C_PULLUP)
+#if defined(TOUCH_I2C_PULLUP)
         i2c_cfg.scl_pullup_en = 1;
 #else
         i2c_cfg.scl_pullup_en = 0;
@@ -222,6 +256,57 @@ static void i2c_init() {
         ESP_ERROR_CHECK(i2c_param_config((i2c_port_t)TOUCH_I2C_HOST,&i2c_cfg));
 #endif    
         i2c_initialized[TOUCH_I2C_HOST] = true;
+    }
+#endif
+#endif
+
+#ifdef POWER_BUS
+#if POWER_BUS == PANEL_BUS_I2C
+    if(!i2c_initialized[POWER_I2C_HOST]) {    
+#ifndef LEGACY_I2C
+        i2c_master_bus_config_t i2c_cfg;
+        i2c_master_bus_handle_t i2c_bus_handle;
+        memset(&i2c_cfg,0,sizeof(i2c_cfg));
+        i2c_cfg.clk_source = I2C_CLK_SRC_DEFAULT;
+        i2c_cfg.glitch_ignore_cnt = 7;
+        i2c_cfg.i2c_port = (i2c_port_num_t)POWER_I2C_HOST;
+        i2c_cfg.sda_io_num = (gpio_num_t)POWER_PIN_NUM_SDA;
+        i2c_cfg.scl_io_num = (gpio_num_t)POWER_PIN_NUM_SCL;
+        // TODO: make configurable
+#ifdef POWER_I2C_PULLUP
+        i2c_cfg.flags.enable_internal_pullup = 1;
+#else
+        i2c_cfg.flags.enable_internal_pullup = 0;
+#endif
+
+
+        ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_cfg,&i2c_bus_handle));
+#else
+        i2c_config_t i2c_cfg;
+        memset(&i2c_cfg,0,sizeof(i2c_cfg));
+#ifdef POWER_CLOCK_HZ
+        i2c_cfg.master.clk_speed = POWER_CLOCK_HZ;
+#else
+        i2c_cfg.master.clk_speed = 100 * 1000;
+#endif
+        i2c_cfg.mode = I2C_MODE_MASTER;
+        i2c_cfg.sda_io_num = POWER_PIN_NUM_SDA;
+#ifdef POWER_I2C_PULLUP
+        i2c_cfg.sda_pullup_en = 1;
+#else
+        i2c_cfg.sda_pullup_en = 0;
+#endif
+        i2c_cfg.scl_io_num = POWER_PIN_NUM_SCL;
+#if defined(POWER_I2C_PULLUP)
+        i2c_cfg.scl_pullup_en = 1;
+#else
+        i2c_cfg.scl_pullup_en = 0;
+#endif
+
+        ESP_ERROR_CHECK(i2c_driver_install((i2c_port_t)POWER_I2C_HOST,I2C_MODE_MASTER,0,0,0));
+        ESP_ERROR_CHECK(i2c_param_config((i2c_port_t)POWER_I2C_HOST,&i2c_cfg));
+#endif    
+        i2c_initialized[POWER_I2C_HOST] = true;
     }
 #endif
 #endif
@@ -649,9 +734,8 @@ void lcd_init(void) {
 #ifdef LCD_GAP_Y
     gap_y = LCD_GAP_Y;
 #endif
-    if(gap_x!=0 || gap_y!=0) {
-        ESP_ERROR_CHECK(esp_lcd_panel_set_gap(lcd_handle,gap_x,gap_y));
-    }
+    esp_lcd_panel_set_gap(lcd_handle,gap_x,gap_y);
+    
 #ifdef LCD_SWAP_XY
 #if LCD_SWAP_XY
     ESP_ERROR_CHECK(esp_lcd_panel_swap_xy(lcd_handle,true));
@@ -668,9 +752,8 @@ void lcd_init(void) {
     mirror_y = LCD_MIRROR_Y;
 #endif
 #endif
-    if(mirror_x || mirror_y) {
-        ESP_ERROR_CHECK(esp_lcd_panel_mirror(lcd_handle,mirror_x,mirror_y));
-    }
+    esp_lcd_panel_mirror(lcd_handle,mirror_x,mirror_y);
+    
 #ifdef LCD_INVERT_COLOR
 #if LCD_INVERT_COLOR
     ESP_ERROR_CHECK(esp_lcd_panel_invert_color(lcd_handle,true));
@@ -865,5 +948,17 @@ uint64_t button_read_all(void) {
     }
     return result;
 }
-
+#endif
+#ifdef POWER
+void power_init(void) {
+#if defined(POWER_BUS) && (POWER_BUS == PANEL_BUS_SPI)
+    spi_init();
+#endif
+#if defined(POWER_BUS) && (POWER_BUS == PANEL_BUS_I2C)
+    i2c_init();
+#endif
+#ifdef POWER_INIT
+    POWER_INIT;
+#endif
+}
 #endif

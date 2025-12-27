@@ -43,7 +43,7 @@ typedef struct {
     const uint8_t* icon;
 } col_entry_t;
 static const col_entry_t colors[] = {
-#ifdef RGB_OR_BGR
+#ifdef RGB_OR_BGR_16
     {COLOR_RED,icon_red},{COLOR_GREEN,icon_green},{COLOR_BLUE,icon_blue},{COLOR_ORANGE,icon_orange}, {COLOR_CYAN,icon_cyan}
 #endif
 #ifdef GSC
@@ -81,7 +81,7 @@ static void draw_icon(size_t index) {
     for(int y = 0;y<32;++y) {
         for(int x = 0; x<128;x+=2) {
             const uint8_t data = *p++;
-#ifdef RGB_OR_BGR
+#ifdef RGB_OR_BGR_16
             const uint8_t low = data & 0x0F;
             const uint8_t high = (data & 0xF0)>>4;
             uint16_t col1rb = (high*31)/15;
@@ -139,7 +139,9 @@ static void poll_input() {
 #endif
 void app_main(void)
 {
-    vTaskDelay(pdMS_TO_TICKS(1000));
+#ifdef POWER
+    power_init();
+#endif
 #ifdef LCD_BUS
     lcd_init();
 #endif
@@ -170,9 +172,9 @@ void app_main(void)
                 screen_ts = ts;
                 // draw the screen
                 const size_t index= (iter++)%colors_size;
-                const PX_TYPE color = colors[index].color;
+                PX_TYPE color = colors[index].color;
                 PX_TYPE* buf = (PX_TYPE*)lcd_transfer_buffer();
-#if defined(RGB_OR_BGR) && LCD_BIT_DEPTH == 16
+#ifdef RGB_OR_BGR_16
 #ifdef LITTLE_ENDIAN   
                 const PX_TYPE px = color;
 #else
@@ -206,10 +208,8 @@ void app_main(void)
                     y= yend+1;
                     while(lcd_vsync_flush_count()) { poll_input(); portYIELD(); }
                 }
-            #ifndef LCD_NO_DMA
                 while(flushing) portYIELD(); 
                 flushing = 1;
-            #endif
                 draw_icon(index);
                 lcd_flush(xoffs,yoffs,xoffs+127,yoffs+31,lcd_transfer_buffer());
             }

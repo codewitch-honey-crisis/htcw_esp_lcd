@@ -150,7 +150,21 @@ extern "C" {
 #endif
 #endif
 
-
+#ifndef POWER_BUS
+#if defined(POWER_SPI_HOST)
+#define POWER_BUS PANEL_BUS_SPI
+#elif defined(POWER_I2C_HOST) 
+#define POWER_BUS PANEL_BUS_I2C
+#endif
+#endif
+#if defined(POWER_BUS) || defined(POWER_INIT)
+#define POWER
+#endif
+#if defined(POWER_BUS) && (POWER_BUS == PANEL_BUS_SPI)
+#ifndef POWER_TRANSFER_SIZE
+#define POWER_TRANSFER_SIZE 1024
+#endif
+#endif
 #define LCD_COLOR_RGB 1
 #define LCD_COLOR_BGR 2
 #define LCD_COLOR_GSC 3
@@ -243,6 +257,10 @@ bool button_read(uint8_t pin);
 /// @brief Reads all the buttons and returns a mask
 /// @return A mask indicating the pins of the pressed buttons
 uint64_t button_read_all(void);
+#endif
+#ifdef POWER
+/// @brief Initializes the power subsystem
+void power_init(void);
 #endif
 #ifdef __cplusplus
 }
