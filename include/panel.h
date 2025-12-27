@@ -1,6 +1,9 @@
 #ifndef PANEL_H
 #define PANEL_H
 #include "panels.h"
+#if __has_include("custom_panel.h")
+#include "custom_panel.h"
+#endif
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
